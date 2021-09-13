@@ -1,0 +1,73 @@
+.Board {
+  // margin: 0 auto;
+  // width: 90vw;
+  // height: 90vh;
+  margin: 100%;
+}
+
+.playable-area {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  justify-content: center;
+  align-content: center;
+  grid-template-columns: repeat(15, auto);
+  grid-template-rows: repeat(15, auto);
+}
+
+.tile {
+  overflow: visible;
+  width: 185px;
+  height: 185px;
+  margin: 14px;
+  display: grid;
+  // grid-template-columns: 25% 25% 25% 25%;
+  grid-template-rows: 25% 25% 25% 25%;
+  position: relative;
+}
+
+.tile > * {
+  background: rgba(0,0,0,0);
+}
+
+.tile.start-tile {
+  grid-column-start: 8;
+  grid-row-start: 8
+}
+
+.tile img {
+  position: absolute;
+  width: 213px;
+  height: 213px;
+  top: -14px;
+  left: -14px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+}
+
+.space.active {
+  box-sizing: border-box;
+  border: 1px solid yellow;
+  z-index: 1;
+}
+
+.new-tile-area {
+  box-sizing: border-box;
+  border: 2px solid blue;
+}
+
+.pawn {
+  position: absolute;
+  width: 46.25px;
+  height: 46.25px;
+  overflow: visible;
+  text-align: center;
+}
+
+.pawn img {
+  top: -17.5px;
+  position: relative;
+}

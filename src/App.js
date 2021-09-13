@@ -1,23 +1,38 @@
 import logo from './logo.svg';
+import Board from './Components/Board';
 import './App.css';
+import { PawnProvider } from './Contexts/PawnContext';
+import { PlayerProvider } from './Contexts/PlayerContext';
+import { TilesProvider } from './Contexts/TilesContext';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
+    <div className="MMApp">
+      {/* <header className="App-header">
         <p>
-          Edit <code>src/App.js</code> and save to reload.
+          Welcome to Magic Maze.
         </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+        <p>
+          Click <span>
+            <a
+              className="App-link"
+              href="https://reactjs.org"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              here
+            </a> 
+          </span> to Get Started
+        </p>
+        
+      </header> */}
+      <PlayerProvider>
+        <TilesProvider>
+          <PawnProvider>
+            <Board/>
+          </PawnProvider>
+        </TilesProvider>
+      </PlayerProvider>
     </div>
   );
 }
