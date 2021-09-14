@@ -7,10 +7,11 @@ interface SpaceProps {
   spaceData: SpaceType,
   showMovableArea: any,
   spacePosition: number[],
-  colorSelected: heroColor | null
+  colorSelected: heroColor | null,
+  gridPosition: number[]
 }
 
-const Space = ({spaceData, showMovableArea, spacePosition, colorSelected}: SpaceProps) => {
+const Space = ({spaceData, showMovableArea, spacePosition, colorSelected, gridPosition}: SpaceProps) => {
   const { pawnState, pawnDispatch } = usePawn();
   const { playerState, playerDispatch } = usePlayer();
 
@@ -30,6 +31,7 @@ const Space = ({spaceData, showMovableArea, spacePosition, colorSelected}: Space
     // }
     if (!colorSelected) return;
     newPawnPosition[colorSelected].position = spacePosition;
+    newPawnPosition[colorSelected].gridPosition = gridPosition;
     pawnDispatch({type: "movePawn", value: spacePosition, color: colorSelected})    
     pawnDispatch({type: "playerHeld", value: null, color: colorSelected})    
   }

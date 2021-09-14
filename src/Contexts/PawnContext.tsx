@@ -17,7 +17,7 @@ const takePosition = () => {
 }
 
 const PawnFactory = (color: heroColor, startPosition: number[]) => {
-  console.log('pawn factory', color, startPosition);
+  // console.log('pawn factory', color, startPosition);
   let heroName, weapon;
   switch (color) {
     case 'yellow':
@@ -49,10 +49,22 @@ const PawnFactory = (color: heroColor, startPosition: number[]) => {
     playerHeld: null,
     position: startPosition,
     blockedPositions: {
-      up: undefined,
-      left: undefined,
-      right: undefined,
-      down: undefined
+      up: {
+        position: undefined,
+        gridPosition: undefined
+      },
+      left: {
+        position: undefined,
+        gridPosition: undefined
+      },
+      right: {
+        position: undefined,
+        gridPosition: undefined
+      },
+      down: {
+        position: undefined,
+        gridPosition: undefined
+      }
     },
     gridPosition: [8, 8],
     ability: '',
@@ -67,12 +79,18 @@ const PawnFactory = (color: heroColor, startPosition: number[]) => {
   }
 }
 
-type BlockedPositions = {
-  up: number[] | undefined,
-  down: number[] | undefined,
-  left: number[] | undefined,
-  right: number[] | undefined
+type BlockedPosition = {
+  position: number[] | undefined;
+  gridPosition: number[] | undefined;
 }
+
+type BlockedPositions = {
+  up: BlockedPosition,
+  down: BlockedPosition,
+  left: BlockedPosition,
+  right: BlockedPosition
+}
+
 
 type Action = {type: 'playerHeld', value: number | null, color: heroColor} | 
               {type: 'movePawn', value: number[], color: heroColor} | 

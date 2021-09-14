@@ -24,6 +24,11 @@ export interface Player {
   pingPlayer: (number: playerNumber) => void,
 }
 
+type BlockedPosition = {
+  position: number[] | undefined;
+  gridPosition: number[] | undefined;
+}
+
 export interface HeroPawn {
   heroName: heroName,
   color: heroColor,
@@ -41,10 +46,10 @@ export interface HeroPawn {
   stealWeapon: () => void,
   escape: () => boolean,
   blockedPositions: {
-    up: number[] | undefined,
-    down: number[] | undefined,
-    left: number[] | undefined,
-    right: number[] | undefined
+    up: BlockedPosition,
+    down: BlockedPosition,
+    left: BlockedPosition,
+    right: BlockedPosition
   }
 }
 
