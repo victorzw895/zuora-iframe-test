@@ -37,15 +37,12 @@ const Board = () => {
     // const allTiles = [...availableArea];
 
     // CHECK EXPLORE TILE MATCHES PAWN COLOR!
-    console.log("tilesState", tilesState);
     const currentTile = tilesState.find(tile => tile.gridPosition[0] === pawnGridPosition[0] && tile.gridPosition[1] === pawnGridPosition[1])
-    console.log("currentTile", currentTile, pawnGridPosition)
     if (currentTile) {
       const pawnRow = currentTile.spaces!.filter((row, rowIndex) => rowIndex === pawnRowIndex).flat(1)
       const pawnSpace = pawnRow.find((col, colIndex) => colIndex === pawnColIndex)
       const spaceDetails = pawnSpace?.details as any
       if (pawnSpace && pawnSpace.type === "exploration") {
-        console.log("currentTile has exploration type", currentTile, pawnGridPosition)
 
         if (spaceDetails.exploreDirection === "up") {
           const tileExists = tilesState.find(tile => tile.gridPosition[0] === currentTile.gridPosition[0] && tile.gridPosition[1] === currentTile.gridPosition[1] - 1)
@@ -77,7 +74,6 @@ const Board = () => {
 
   const highlightNewTileArea = () => {
     const placeholderTiles = [...availableArea];
-    console.log("higlight new tiles", placeholderTiles)
 
     const highlightAreas = Object.entries(pawnState).map(([color, pawn]) => {
       return getExplorationTile(pawn.gridPosition, pawn.position[0], pawn.position[1]) 
@@ -91,40 +87,9 @@ const Board = () => {
       else {
         placeholderTiles[tileIndex] = newArea
       }
-      console.log("new area highlight", newArea.gridPosition, tileIndex)
-      // placeholderTiles.push(newArea)
     })
 
-    console.log("****", highlightAreas, placeholderTiles)
-
-    console.log("alltiles", placeholderTiles);
-    // check if pawns on explore space
-    // if pawn position on explore space
-    // check pawn tile position
-    // const highlightAreas = [[8, 7], [9, 8], [8, 9], [7, 8]]
-
-    // const tiles: TileInterface[] = [
-    //   {id: "4", gridPosition: [8,7], placementDirection: 'up'},
-    //   {id: "7", gridPosition: [9,8], placementDirection: 'right'},
-    //   {id: "6", gridPosition: [8,9], placementDirection: 'down'},
-    //   {id: "5", gridPosition: [7,8], placementDirection: 'left'}
-    // ]
-
-    // highlight area
     setAvailableArea(placeholderTiles);
-  }
-
-  const addPlaceholders = (gridPosition: number[]) => {
-
-    const extraPlaceholderTiles = [
-      {gridPosition: [gridPosition[0] - 1, gridPosition[1]]},
-      {gridPosition: [gridPosition[0], gridPosition[1] - 1]},
-      {gridPosition: [gridPosition[0] + 1, gridPosition[1]]},
-      {gridPosition: [gridPosition[0], gridPosition[1] + 1]},
-    ] as TileInterface[]
-
-    console.log("extraPlaceholders", gridPosition, extraPlaceholderTiles)
-    return extraPlaceholderTiles;
   }
 
   const clearHighlightAreas = (gridPosition: number[]) => {
