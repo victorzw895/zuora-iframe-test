@@ -9,17 +9,8 @@ import { usePawn } from '../Contexts/PawnContext';
 import { useTiles } from '../Contexts/TilesContext';
 import { tile1a } from '../Data/tile1a';
 import Draggable from 'react-draggable';
+import { allTiles } from '../Data/all-tiles-data';
 
-
-const createTileAreas = () => {
-  const tileAreas = []
-  for (let i = 0; i < 16; i++) {
-    for (let j = 0; j < 16; j++) {
-      tileAreas.push({gridPosition: [i, j]})
-    }
-  }
-  return tileAreas;
-}
 
 const startTiles = [
     {gridPosition: [8,7]},
@@ -54,20 +45,27 @@ const Board = () => {
       const pawnSpace = pawnRow.find((col, colIndex) => colIndex === pawnColIndex)
       const spaceDetails = pawnSpace?.details as any
       if (pawnSpace && pawnSpace.type === "exploration") {
-        console.log("currentTile", currentTile, pawnGridPosition)
+        console.log("currentTile has exploration type", currentTile, pawnGridPosition)
 
         if (spaceDetails.exploreDirection === "up") {
-          // const tileIndex = allTiles.findIndex(tile => tile.gridPosition[0] === currentTile.gridPosition[0] && tile.gridPosition[1] === currentTile.gridPosition[1] - 1);
-          // allTiles[tileIndex] = {gridPosition: [currentTile.gridPosition[0], currentTile.gridPosition[1] - 1], placementDirection: spaceDetails.exploreDirection} as TileInterface
+          const tileExists = tilesState.find(tile => tile.gridPosition[0] === currentTile.gridPosition[0] && tile.gridPosition[1] === currentTile.gridPosition[1] - 1)
+          if (tileExists) return
           return {gridPosition: [currentTile.gridPosition[0], currentTile.gridPosition[1] - 1], placementDirection: spaceDetails.exploreDirection}
         }
         if (spaceDetails.exploreDirection === "down") {
+          const tileExists = tilesState.find(tile => tile.gridPosition[0] === currentTile.gridPosition[0] && tile.gridPosition[1] === currentTile.gridPosition[1] + 1)
+          if (tileExists) return
           return {gridPosition: [currentTile.gridPosition[0], currentTile.gridPosition[1] + 1], placementDirection: spaceDetails.exploreDirection}
         }
         if (spaceDetails.exploreDirection === "left") {
+          const tileExists = tilesState.find(tile => tile.gridPosition[0] === currentTile.gridPosition[0] - 1 && tile.gridPosition[1] === currentTile.gridPosition[1])
+          console.log("here", tileExists)
+          if (tileExists) return
           return {gridPosition: [currentTile.gridPosition[0] - 1, currentTile.gridPosition[1]], placementDirection: spaceDetails.exploreDirection}
         }
         if (spaceDetails.exploreDirection === "right") {
+          const tileExists = tilesState.find(tile => tile.gridPosition[0] === currentTile.gridPosition[0] + 1 && tile.gridPosition[1] === currentTile.gridPosition[1])
+          if (tileExists) return
           return {gridPosition: [currentTile.gridPosition[0] + 1, currentTile.gridPosition[1]], placementDirection: spaceDetails.exploreDirection}
         }
       }
@@ -78,20 +76,28 @@ const Board = () => {
 
 
   const highlightNewTileArea = () => {
-    const allTiles = [...availableArea];
-
+    const placeholderTiles = [...availableArea];
+    console.log("higlight new tiles", placeholderTiles)
 
     const highlightAreas = Object.entries(pawnState).map(([color, pawn]) => {
       return getExplorationTile(pawn.gridPosition, pawn.position[0], pawn.position[1]) 
     }).filter(gridPos => gridPos) as TileInterface[]
 
-    console.log(highlightAreas)
     highlightAreas.forEach(newArea => {
-      const tileIndex = allTiles.findIndex(tile => tile.gridPosition[0] === newArea.gridPosition[0] && tile.gridPosition[1] === newArea.gridPosition[1]);
-      allTiles[tileIndex] = newArea
+      const tileIndex = placeholderTiles.findIndex(tile => tile.gridPosition[0] === newArea.gridPosition[0] && tile.gridPosition[1] === newArea.gridPosition[1]);
+      if (tileIndex === -1) {
+        placeholderTiles.push(newArea)
+      }
+      else {
+        placeholderTiles[tileIndex] = newArea
+      }
+      console.log("new area highlight", newArea.gridPosition, tileIndex)
+      // placeholderTiles.push(newArea)
     })
 
-    console.log("alltiles", allTiles);
+    console.log("****", highlightAreas, placeholderTiles)
+
+    console.log("alltiles", placeholderTiles);
     // check if pawns on explore space
     // if pawn position on explore space
     // check pawn tile position
@@ -105,11 +111,47 @@ const Board = () => {
     // ]
 
     // highlight area
-    setAvailableArea(allTiles);
+    setAvailableArea(placeholderTiles);
   }
 
-  const clearHighlightAreas = () => {
-    setAvailableArea([]);
+  const addPlaceholders = (gridPosition: number[]) => {
+
+    const extraPlaceholderTiles = [
+      {gridPosition: [gridPosition[0] - 1, gridPosition[1]]},
+      {gridPosition: [gridPosition[0], gridPosition[1] - 1]},
+      {gridPosition: [gridPosition[0] + 1, gridPosition[1]]},
+      {gridPosition: [gridPosition[0], gridPosition[1] + 1]},
+    ] as TileInterface[]
+
+    console.log("extraPlaceholders", gridPosition, extraPlaceholderTiles)
+    return extraPlaceholderTiles;
+  }
+
+  const clearHighlightAreas = (gridPosition: number[]) => {
+    const remainingAvailable = availableArea.filter(area => area.gridPosition[0] !== gridPosition[0] || area.gridPosition[1] !== gridPosition[1]);
+    
+    const resetAreas = remainingAvailable.map(area => {
+      return {gridPosition: area.gridPosition}
+    })
+
+    if (gridPosition[0] === 8) {
+      if (gridPosition[1] < 8) {
+        resetAreas.push({gridPosition: [gridPosition[0], gridPosition[1] - 1]} as TileInterface) 
+      }
+      else if (gridPosition[1] > 8) {
+        resetAreas.push({gridPosition: [gridPosition[0], gridPosition[1] + 1]} as TileInterface) 
+      }
+    }
+    else if (gridPosition[1] === 8) {
+      if (gridPosition[0] < 8) {
+        resetAreas.push({gridPosition: [gridPosition[0] - 1, gridPosition[1]]} as TileInterface) 
+      }
+      else if (gridPosition[0] > 8) {
+        resetAreas.push({gridPosition: [gridPosition[0] + 1, gridPosition[1]]} as TileInterface) 
+      }
+    }
+
+    setAvailableArea(resetAreas as TileInterface[]);
   }
 
   return (

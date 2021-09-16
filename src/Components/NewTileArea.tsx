@@ -7,7 +7,7 @@ import { useTiles } from '../Contexts/TilesContext';
 
 interface NewTileAreaProps {
   tile: TileInterface,
-  clearHighlightAreas: () => void,
+  clearHighlightAreas: (gridPosition: number[]) => void,
 }
 
 const NewTileArea = ({tile, clearHighlightAreas}: NewTileAreaProps) => {
@@ -23,11 +23,11 @@ const NewTileArea = ({tile, clearHighlightAreas}: NewTileAreaProps) => {
     if (placementDirection) {
       addNewTile({gridPosition, placementDirection} as TileInterface);
     }
-    // clearHighlightAreas();
+
+    clearHighlightAreas(gridPosition);
   }
 
   const getDisplacementValue = (positionValue: number) => {
-    console.log(positionValue);
     return tileWallSize - ((Math.abs(8 - positionValue) * 2) * spaceSize)
   }
 

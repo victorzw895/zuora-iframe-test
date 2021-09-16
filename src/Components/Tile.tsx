@@ -324,6 +324,10 @@ const Tile = ({startTile, id, tileData}: tileProps) => {
     return false;
   }
 
+  const getDisplacementValue = (positionValue: number) => {
+    return tileWallSize - ((Math.abs(8 - positionValue) * 2) * spaceSize)
+  }
+
   
   return (
     <div className={`tile ${id === '1a' ? "start-tile" : ""}`} 
@@ -331,10 +335,10 @@ const Tile = ({startTile, id, tileData}: tileProps) => {
         {
           gridColumnStart: tileData.gridPosition[0],
           gridRowStart: tileData.gridPosition[1],
-          marginTop: tileData.placementDirection && tileData.placementDirection === "left" ? (tileWallSize - ((8 - tileData.gridPosition[0]) * 2 * spaceSize)) : tileWallSize,
-          marginBottom: tileData.placementDirection && tileData.placementDirection === "right" ? (tileWallSize - (Math.abs(8 - tileData.gridPosition[0]) * 2 * spaceSize)) : tileWallSize,
-          marginLeft: tileData.placementDirection && tileData.placementDirection === "down" ? (tileWallSize - (Math.abs(8 - tileData.gridPosition[1]) * 2 * spaceSize)) : tileWallSize,
-          marginRight: tileData.placementDirection && tileData.placementDirection === "up" ? (tileWallSize - ((8 - tileData.gridPosition[1]) * 2 * spaceSize)) : tileWallSize,
+          marginTop: tileData.gridPosition[0] < 8 ? getDisplacementValue(tileData.gridPosition[0]) : tileWallSize,
+          marginBottom: tileData.gridPosition[0] > 8 ? getDisplacementValue(tileData.gridPosition[0]) : tileWallSize,
+          marginLeft: tileData.gridPosition[1] > 8 ? getDisplacementValue(tileData.gridPosition[1]) : tileWallSize,
+          marginRight: tileData.gridPosition[1] < 8 ? getDisplacementValue(tileData.gridPosition[1]) : tileWallSize,
           placeSelf: "center"
         }
       }>
