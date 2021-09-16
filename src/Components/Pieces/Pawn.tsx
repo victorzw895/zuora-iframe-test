@@ -67,12 +67,16 @@ const Pawn = ({color, position}: pawnProps) => {
     <div className={`pawn ${color}`} onClick={_handleClick}
       style={{
         left: `${(pawn.position[0] * pawn.width) + tileWallSize + ((8 - pawn.gridPosition[1]) * pawn.width)}px`,
-        top: `${(pawn.position[1] * pawn.height) + tileWallSize + ((8 - pawn.gridPosition[0]) * pawn.height)}px`,
+        top: `${(pawn.position[1] * pawn.height) + tileWallSize + ((pawn.gridPosition[0] - 8) * pawn.height)}px`,
         gridColumnStart: pawn.gridPosition[0],
         gridRowStart: pawn.gridPosition[1]
       }}
     >
-      <img src={`/${color}-pawn.svg`} alt={`${color}-piece`} style={{border: `${pawn.playerHeld ? "2px solid blue" : ""}`}}/>
+      <img 
+        draggable={false}
+        src={`/${color}-pawn.svg`} 
+        alt={`${color}-piece`} 
+        style={{border: `${pawn.playerHeld ? "2px solid blue" : ""}`}}/>
     </div>
   )
 }

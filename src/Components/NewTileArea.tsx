@@ -20,43 +20,29 @@ const NewTileArea = ({tile, clearHighlightAreas}: NewTileAreaProps) => {
   }
 
   const placeNewTile = (e: MouseEvent<HTMLDivElement>) => {
-    let entryDirection;
-
-    switch (placementDirection) {
-      case "right":
-        entryDirection = "left";
-        break;
-      case "left":
-        entryDirection = "right";
-        break;
-      // case "up":
-      //   entryDirection = "down";
-      //   break;
-      // case "down":
-      //   entryDirection = "up";
-      //   break;
-      default:
-        entryDirection = placementDirection
-        break;
+    if (placementDirection) {
+      addNewTile({gridPosition, placementDirection} as TileInterface);
     }
+    // clearHighlightAreas();
+  }
 
-    addNewTile({id: tile.id, gridPosition, placementDirection} as TileInterface);
-    clearHighlightAreas();
+  const getDisplacementValue = (positionValue: number) => {
+    console.log(positionValue);
+    return tileWallSize - ((Math.abs(8 - positionValue) * 2) * spaceSize)
   }
 
   return (
-    <div className={`tile new-tile-area ${placementDirection}`}
+    <div className={`tile new-tile-area ${placementDirection ? placementDirection : "placeholder"}`}
       onClick={(e) => placeNewTile(e)}
       style={
         {
           gridColumnStart: gridPosition[0], 
           gridRowStart: gridPosition[1],
-          marginTop: placementDirection && placementDirection === "left" ? (tileWallSize - (1 * spaceSize)) : tileWallSize,
-          marginBottom: placementDirection && placementDirection === "right" ? (tileWallSize - (1 * spaceSize)) : tileWallSize,
-          alignSelf: placementDirection && placementDirection === "right" ? "end" : "auto",
-          marginLeft: placementDirection && placementDirection === "down" ? (tileWallSize - (1 * spaceSize)) : tileWallSize,
-          marginRight: placementDirection && placementDirection === "up" ? (tileWallSize - (1 * spaceSize)) : tileWallSize,
-          justifySelf: placementDirection && placementDirection === "up" ? "end" : "baseline"
+          marginTop: gridPosition[0] < 8 ? getDisplacementValue(gridPosition[0]) : tileWallSize,
+          marginBottom: gridPosition[0] > 8 ? getDisplacementValue(gridPosition[0]) : tileWallSize,
+          marginLeft: gridPosition[1] > 8 ? getDisplacementValue(gridPosition[1]) : tileWallSize,
+          marginRight: gridPosition[1] < 8 ? getDisplacementValue(gridPosition[1]) : tileWallSize,
+          placeSelf: "center"
         }
       }>
     </div>

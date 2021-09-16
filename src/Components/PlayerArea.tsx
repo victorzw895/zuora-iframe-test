@@ -12,7 +12,7 @@ const PlayerArea = ({highlightNewTileArea} : PlayerAreaProps) => {
   // }
 
   return (
-    <div>
+    <div className="player-area">
       {/* <button onClick={(e) => placeNewTile(e)}>Add Tile</button> */}
       <button onClick={() => highlightNewTileArea()}>Add Tile</button>
     </div>

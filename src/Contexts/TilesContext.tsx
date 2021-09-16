@@ -50,7 +50,7 @@ const calculateRotation = (placementDirection: direction, entryDirection: direct
   else return Math.abs(placementDirectionValue - entrySideValue);
 }
 
-const rotate = (matrix: any) => {          // function statement
+const rotateTileSpaces = (matrix: any) => {          // function statement
   const N = matrix.length - 1;   // use a constant
   // use arrow functions and nested map;
   const result = matrix.map((row: any, i: any) => 
@@ -61,27 +61,46 @@ const rotate = (matrix: any) => {          // function statement
   return matrix;
 }
 
-const updateSideWalls = (spaces: Space[][], rotationValue: number) => {
+const getUpdatedDirectionValue = (direction: direction, rotationValue: number) => {
+  let updatedValue = directionValue[direction] + rotationValue;
+  if (updatedValue >= 360) {
+    updatedValue = updatedValue - 360;
+  }
+  return Object.keys(directionValue).find(key => directionValue[key as direction] === updatedValue) as direction;
+}
+
+const updateSpaceDirections = (spaces: Space[][], rotationValue: number) => {
   // console.log("updating sidewalls");
   const newSpaces = [...spaces];
-  return newSpaces.map((row, rowIndex) => row.map((col, colIndex) => 
+  return newSpaces.map((row, rowIndex) => row.map((col: any, colIndex) => 
     {
-      if (col.details && col.details.sideWalls) {
-        let updatedSideWalls = col.details.sideWalls.map(
-          sideWall => {
-            let updatedValue = directionValue[sideWall] + rotationValue;
-            if (updatedValue >= 360) {
-              updatedValue = updatedValue - 360;
+      if (col.details) {
+        if (col.details.sideWalls) {
+          let updatedSideWalls = col.details.sideWalls.map(
+            (sideWall: any) => {
+              return getUpdatedDirectionValue(sideWall, rotationValue)
             }
-            return Object.keys(directionValue).find(key => directionValue[key as direction] === updatedValue) as direction;
-          }
-        )
-        col.details.sideWalls = updatedSideWalls;
+          )
+          col.details.sideWalls = updatedSideWalls;
+        }
+        if (col.details.exploreDirection) {
+          col.details.exploreDirection = getUpdatedDirectionValue(col.details.exploreDirection, rotationValue)
+        }
       }
       return col;
     }
   ))
 }
+
+// const updateTileDirections = (newTile: TileInterface, rotationValue: number) => {
+//   if (newTile.entryDirection) {
+//     newTile.entryDirection = getUpdatedDirectionValue(newTile.entryDirection, rotationValue)
+//   }
+//   if (newTile.entrySide) {
+//     newTile.entrySide = getUpdatedDirectionValue(newTile.entrySide, rotationValue)
+//   }
+//   return newTile;
+// }
 
 const tilesReducer = (tilesState: TileInterface[], action: any) => {
 
@@ -100,19 +119,22 @@ const tilesReducer = (tilesState: TileInterface[], action: any) => {
 
       switch (rotationValue) {
         case 90:
-          rotate(tileSpaces);
-          updateSideWalls(tileSpaces, rotationValue);
+          // updateTileDirections(newTile, rotationValue)
+          rotateTileSpaces(tileSpaces);
+          updateSpaceDirections(tileSpaces, rotationValue);
           break; 
         case 180:
-          rotate(tileSpaces);
-          rotate(tileSpaces);
-          updateSideWalls(tileSpaces, rotationValue);
+          // updateTileDirections(newTile, rotationValue)
+          rotateTileSpaces(tileSpaces);
+          rotateTileSpaces(tileSpaces);
+          updateSpaceDirections(tileSpaces, rotationValue);
           break;
         case 270:
-          rotate(tileSpaces);
-          rotate(tileSpaces);
-          rotate(tileSpaces);
-          updateSideWalls(tileSpaces, rotationValue);
+          // updateTileDirections(newTile, rotationValue)
+          rotateTileSpaces(tileSpaces);
+          rotateTileSpaces(tileSpaces);
+          rotateTileSpaces(tileSpaces);
+          updateSpaceDirections(tileSpaces, rotationValue);
           break;
         default:
           break;

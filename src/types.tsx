@@ -67,7 +67,7 @@ export interface TileInterface {
 
 export interface Space {
   type: SpaceTypeName,
-  details?: SpaceDetails | TimerSpace | TeleporterSpace | ExplorationSpace | SpecialSpace | WeaponSpace | ExitSpace,
+  details?: (SpaceDetails | TimerSpace | TeleporterSpace | ExplorationSpace | SpecialSpace | WeaponSpace | ExitSpace),
 }
 
 interface SpaceDetails {
