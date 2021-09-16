@@ -112,7 +112,7 @@ export const tile1a = {
         "sideWalls": [
           "up",
           "down",
-          // "left"
+          "left"
         ],
         "hasEscalator": true,
         "color": "green",

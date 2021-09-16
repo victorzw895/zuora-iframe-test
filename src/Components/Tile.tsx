@@ -132,7 +132,6 @@ const Tile = ({startTile, id, tileData}: tileProps) => {
     else if (direction === "up" || direction === "left") {
       directionalSpaces.push(...spaces.reverse(), ...extraSpaces.reverse());
     }
-    // console.log("directionalSpaces", direction, directionalSpaces)
     return directionalSpaces;
   }
 
@@ -149,6 +148,18 @@ const Tile = ({startTile, id, tileData}: tileProps) => {
     const pawnPosition = pawn.position;
     const startCol = pawnPosition[0];
     const startRow = pawnPosition[1];
+
+    const currentTile = tilesState.find(tile => tile.gridPosition[0] === pawn.gridPosition[0] && tile.gridPosition[1] === pawn.gridPosition[1]);
+    if (currentTile) {
+      const tileRow = currentTile.spaces?.find((row, rowIndex) => rowIndex === startRow);
+      const currentSpace = tileRow?.find((col, colIndex) => colIndex === startCol);
+      if (currentSpace && currentSpace.details?.sideWalls?.includes(direction)) {
+        return {
+          position: [startCol, startRow],
+          gridPosition: currentTile.gridPosition
+        }
+      }
+    }
 
     const allSpaces = getAllDirectionalSpaces(pawn, direction);
 
@@ -379,103 +390,72 @@ const Tile = ({startTile, id, tileData}: tileProps) => {
                         }
                       }
                     }
-                  // else if (tileData.gridPosition[0] === colorHeld.gridPosition[0] && 
-                  //           tileData.gridPosition[1] === colorHeld.gridPosition[1] - 1) {
-                  //             // if no blocked
-                  //             if (colIndex === colorHeld.position[0] - 1 && colorHeld.position[0] === 2) {
-                  //               if (!colorHeld.blockedPositions.down.gridPosition) {
-                  //                 if (!isSpaceOccupied(tileData.gridPosition, colIndex, rowIndex)) {
-                  //                   rowBlocked = false;
-                  //                   if (colorHeld.color === "yellow") {
-                  //                     console.log("hersjflkds", tileData.gridPosition, colIndex, rowIndex, rowBlocked)
-                  //                   }
-                  //                 }
-                  //               }
-                  //             }
-                  //             // else rowBlocked = true
-                            }
-                  if (tileHasBlockedSpace(tileData, "left", colorHeld)) {
-                    if (rowIndex === colorHeld.blockedPositions.left.position![1]) {
-                      if (colIndex <= colorHeld.blockedPositions.left.position![0]) {
-                        rowBlocked = true;
+                  }
+
+
+                  if (tileData.gridPosition[0] === colorHeld.gridPosition[0] - 1 && 
+                    tileData.gridPosition[1] === colorHeld.gridPosition[1]) {
+                    if (tileHasBlockedSpace(tileData, "left", colorHeld)) {
+                      if (rowIndex === colorHeld.blockedPositions.left.position![1]) {
+                        if (colIndex <= colorHeld.blockedPositions.left.position![0]) {
+                          rowBlocked = true;
+                        }
+                        else if (colIndex > colorHeld.blockedPositions.left.position![0]) {
+                          rowBlocked = false;
+                        }
                       }
-                      else if (colIndex > colorHeld.blockedPositions.left.position![0]) {
-                        rowBlocked = false;
+                    }
+                    else {
+                      if (rowIndex === colorHeld.position[1] + 1 && colorHeld.position[1] === 1) {
+                        if (!colorHeld.blockedPositions.left.gridPosition) {
+                          rowBlocked = false;
+                        }
                       }
                     }
                   }
-                  else if (tileData.gridPosition[0] === colorHeld.gridPosition[0] + 1 && 
-                          tileData.gridPosition[1] === colorHeld.gridPosition[1]) {
-                            // // if no blocked
-                            if (rowIndex === colorHeld.position[1] - 1 && colorHeld.position[1] === 2) {
-                              if (!colorHeld.blockedPositions.right.gridPosition) {
-                                if (!isSpaceOccupied(tileData.gridPosition, colIndex, rowIndex)) {
-                                  rowBlocked = false;
-                                }
-                              }
-                            }
-
-                            // if (!colorHeld.blockedPositions.right.gridPosition) {
-                              
-                            //   if (!colorHeld.blockedPositions.left.gridPosition) {
-                            //     if (rowIndex === colorHeld.position[1] - 1 && colorHeld.position[1] === 2) {
-                            //       if (!isSpaceOccupied(tileData.gridPosition, colIndex, rowIndex)) {
-                            //         rowBlocked = false;
-                            //       }
-                            //     }
-                            //   }
-                            //   else if (rowIndex === colorHeld.position[1] - 1 && colorHeld.position[1] === 2) {
-                            //     if (!isSpaceOccupied(tileData.gridPosition, colIndex, rowIndex)) {
-                            //       rowBlocked = false;
-                            //     }
-                            //   }
-                            // }
-                            // else rowBlocked = true
-                          }
                   
-                  if (tileHasBlockedSpace(tileData, "right", colorHeld)) {
-                    if (rowIndex === colorHeld.blockedPositions.right.position![1]) {
-                      if (colIndex >= colorHeld.blockedPositions.right.position![0]) {
-                        rowBlocked = true;
-                      }
-                      else if (colIndex < colorHeld.blockedPositions.right.position![0]) {
-                        rowBlocked = false;
-                      }
-                    }
-                  }
-                  else if (tileData.gridPosition[0] === colorHeld.gridPosition[0] - 1 && 
-                          tileData.gridPosition[1] === colorHeld.gridPosition[1]) {
-                            if (rowIndex === colorHeld.position[1] + 1 && colorHeld.position[1] === 1) {
-                              if (!colorHeld.blockedPositions.left.gridPosition) {
-                                if (!isSpaceOccupied(tileData.gridPosition, colIndex, rowIndex)) {
-                                  rowBlocked = false;
-                                }
-                              }
-                            }
-                          }
-
-                  if (tileHasBlockedSpace(tileData, "down", colorHeld)) {
-                    if (colIndex === colorHeld.blockedPositions.down.position![0]) {
-                      if (rowIndex >= colorHeld.blockedPositions.down.position![1]) {
-                        rowBlocked = true;
-                      }
-                      else if (rowIndex < colorHeld.blockedPositions.down.position![1]) {
-                        rowBlocked = false;
-                      }
-                    }
-                  }
-                  else if (tileData.gridPosition[0] === colorHeld.gridPosition[0] && 
-                          tileData.gridPosition[1] === colorHeld.gridPosition[1] + 1) {
-                            if (colIndex === colorHeld.position[0] + 1 && colorHeld.position[0] === 1) {
-                              if (!colorHeld.blockedPositions.up.gridPosition) {
-                                if (!isSpaceOccupied(tileData.gridPosition, colIndex, rowIndex)) {
-                                  rowBlocked = false;
-                                }
-                              }
-                            }
-                          }
-
                   
+                  if (tileData.gridPosition[0] === colorHeld.gridPosition[0] + 1 && 
+                    tileData.gridPosition[1] === colorHeld.gridPosition[1]) {
+                    if (tileHasBlockedSpace(tileData, "right", colorHeld)) {
+                      if (rowIndex === colorHeld.blockedPositions.right.position![1]) {
+                        if (colIndex >= colorHeld.blockedPositions.right.position![0]) {
+                          rowBlocked = true;
+                        }
+                        else if (colIndex < colorHeld.blockedPositions.right.position![0]) {
+                          rowBlocked = false;
+                        }
+                      }
+                    }
+                    else {
+                      if (rowIndex === colorHeld.position[1] - 1 && colorHeld.position[1] === 2) {
+                        if (!colorHeld.blockedPositions.right.gridPosition) {
+                          rowBlocked = false;
+                        }
+                      }
+                    }
+                  }
+
+                  if (tileData.gridPosition[0] === colorHeld.gridPosition[0] && 
+                    tileData.gridPosition[1] === colorHeld.gridPosition[1] + 1) {
+                    if (tileHasBlockedSpace(tileData, "down", colorHeld)) {
+                      if (colIndex === colorHeld.blockedPositions.down.position![0]) {
+                        if (rowIndex >= colorHeld.blockedPositions.down.position![1]) {
+                          rowBlocked = true;
+                        }
+                        else if (rowIndex < colorHeld.blockedPositions.down.position![1]) {
+                          rowBlocked = false;
+                        }
+                      }
+                    }
+                    else {
+                      if (colIndex === colorHeld.position[0] + 1 && colorHeld.position[0] === 1) {
+                        if (!colorHeld.blockedPositions.down.gridPosition) {
+                          rowBlocked = false;
+                        }
+                      }
+                    }
+                  }
 
                   highlightSpace = !rowBlocked
                 }
