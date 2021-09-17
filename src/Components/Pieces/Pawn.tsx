@@ -1,6 +1,6 @@
 import React, { useEffect, useState, MouseEvent } from 'react';
 import { heroName, heroColor, heroWeapon, HeroPawn } from '../../types';
-import { tileWallSize } from '../../constants';
+import { tileWallSize, spaceSize } from '../../constants';
 import { usePawn, PawnState } from '../../Contexts/PawnContext';
 
 const PawnFactory = (color: heroColor, startPosition: number[]) => {
@@ -63,20 +63,37 @@ const Pawn = ({color, position}: pawnProps) => {
     }
   }
 
+  const getDisplacementValue = (positionValue: number) => {
+    return tileWallSize - ((Math.abs(8 - positionValue) * 2) * spaceSize)
+  }
+
   return (
-    <div className={`pawn ${color}`} onClick={_handleClick}
+    <div className="pawn-grid"
       style={{
-        left: `${(pawn.position[0] * pawn.width) + tileWallSize + ((8 - pawn.gridPosition[1]) * pawn.width)}px`,
-        top: `${(pawn.position[1] * pawn.height) + tileWallSize + ((pawn.gridPosition[0] - 8) * pawn.height)}px`,
         gridColumnStart: pawn.gridPosition[0],
-        gridRowStart: pawn.gridPosition[1]
-      }}
-    >
-      <img 
-        draggable={false}
-        src={`/${color}-pawn.svg`} 
-        alt={`${color}-piece`} 
-        style={{border: `${pawn.playerHeld ? "2px solid blue" : ""}`}}/>
+        gridRowStart: pawn.gridPosition[1],
+        marginTop: pawn.gridPosition[0] < 8 ? getDisplacementValue(pawn.gridPosition[0]) : tileWallSize,
+        marginBottom: pawn.gridPosition[0] > 8 ? getDisplacementValue(pawn.gridPosition[0]) : tileWallSize,
+        marginLeft: pawn.gridPosition[1] > 8 ? getDisplacementValue(pawn.gridPosition[1]) : tileWallSize,
+        marginRight: pawn.gridPosition[1] < 8 ? getDisplacementValue(pawn.gridPosition[1]) : tileWallSize,
+        placeSelf: "center",
+        position: "static"
+      }}>
+      <div className={`pawn ${color}`} onClick={_handleClick}
+        style={{
+          // left: `${(pawn.position[0] * pawn.width) + tileWallSize + ((8 - pawn.gridPosition[1]) * pawn.width)}px`,
+          // top: `${(pawn.position[1] * pawn.height) + tileWallSize + ((pawn.gridPosition[0] - 8) * pawn.height)}px`,
+          gridColumnStart: pawn.position[0] + 1,
+          gridRowStart: pawn.position[1] + 1,
+          position: "relative"
+        }}
+      >
+        <img 
+          draggable={false}
+          src={`/${color}-pawn.svg`} 
+          alt={`${color}-piece`} 
+          style={{border: `${pawn.playerHeld ? "2px solid blue" : ""}`}}/>
+      </div>
     </div>
   )
 }

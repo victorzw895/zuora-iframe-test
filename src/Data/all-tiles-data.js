@@ -192,7 +192,8 @@ export const allTiles = [
             "down",
             "left"
           ],
-          "hasEscalator": true
+          "hasEscalator": true,
+          "escalatorName": "a"
         }
       },
       {
@@ -252,6 +253,8 @@ export const allTiles = [
           ],
           "exploreDirection": "down",
           "color": "orange",
+          "hasEscalator": true,
+          "escalatorName": "a"
         }
       },
       {
@@ -896,7 +899,8 @@ export const allTiles = [
           "sideWalls": [
             "down"
           ],
-          "hasEscalator": true
+          "hasEscalator": true,
+          "escalatorName": "a"
         }
       },
       {
@@ -952,7 +956,8 @@ export const allTiles = [
             "left"
           ],
           "isEntry": true,
-          "hasEscalator": true
+          "hasEscalator": true,
+          "escalatorName": "a"
         }
       },
       {
@@ -1313,7 +1318,8 @@ export const allTiles = [
             "down",
             "left"
           ],
-          "hasEscalator": true
+          "hasEscalator": true,
+          "escalatorName": "a"
         }
       },
       {
@@ -1340,7 +1346,8 @@ export const allTiles = [
             "up",
             "right"
           ],
-          "hasEscalator": true
+          "hasEscalator": true,
+          "escalatorName": "a"
         }
       },
       {
@@ -1578,7 +1585,8 @@ export const allTiles = [
             "right",
             "down"
           ],
-          "hasEscalator": true
+          "hasEscalator": true,
+          "escalatorName": "b"
         }
       },
       {
@@ -1610,7 +1618,8 @@ export const allTiles = [
             "right",
             "left"
           ],
-          "hasEscalator": true
+          "hasEscalator": true,
+          "escalatorName": "b"
         }
       },
       {
@@ -1633,7 +1642,8 @@ export const allTiles = [
             "right",
             "left"
           ],
-          "hasEscalator": true
+          "hasEscalator": true,
+          "escalatorName": "a"
         }
       },
       {
@@ -1674,7 +1684,8 @@ export const allTiles = [
             "down",
             "left"
           ],
-          "hasEscalator": true
+          "hasEscalator": true,
+          "escalatorName": "a"
         }
       },
       {

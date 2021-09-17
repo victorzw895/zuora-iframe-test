@@ -21,8 +21,7 @@
   height: 185px;
   margin: 14px;
   display: grid;
-  // grid-template-columns: 25% 25% 25% 25%;
-  grid-template-rows: 25% 25% 25% 25%;
+  grid-template-rows: repeat(4, 25%);
   position: relative;
 }
 
@@ -45,12 +44,12 @@
 
 .row {
   display: grid;
-  grid-template-columns: repeat(4, auto);
+  grid-template-columns: repeat(4, 25%);
 }
 
 .space.active {
   box-sizing: border-box;
-  border: 1px solid yellow;
+  border: 2px solid yellow;
   z-index: 1;
 }
 
@@ -65,8 +64,26 @@
   }
 }
 
+
+/* TEST */
+.pawn-grid {
+  // grid-column-start: 8;
+  // grid-row-start: 7;
+  width: 185px;
+  height: 185px;
+  // margin: 14px -78.5px 14px 14px;
+  display: grid;
+  grid-template-rows: repeat(4, 25%);
+  grid-template-columns: repeat(4, 25%);
+  place-self: center;
+  position: relative;
+  justify-items: center;
+  justify-content: center;
+  align-content: center;
+}
+
 .pawn {
-  position: absolute;
+  // position: absolute;
   width: 46.25px;
   height: 46.25px;
   overflow: visible;

@@ -9,7 +9,6 @@ import { usePawn } from '../Contexts/PawnContext';
 import { useTiles } from '../Contexts/TilesContext';
 import { tile1a } from '../Data/tile1a';
 import Draggable from 'react-draggable';
-import { allTiles } from '../Data/all-tiles-data';
 
 
 const startTiles = [
@@ -31,19 +30,14 @@ const Board = () => {
   const { yellow, green, purple, orange } = pawnState;
 
   const [availableArea, setAvailableArea] = useState<TileInterface[]>(startTiles as TileInterface[]);
-  // const [availableArea, setAvailableArea] = useState<TileInterface[]>([]);
 
-  const getExplorationTile = (pawnGridPosition: number[], pawnColIndex: number, pawnRowIndex: number) => {
-    // const allTiles = [...availableArea];
-
-    // CHECK EXPLORE TILE MATCHES PAWN COLOR!
-    const currentTile = tilesState.find(tile => tile.gridPosition[0] === pawnGridPosition[0] && tile.gridPosition[1] === pawnGridPosition[1])
+  const getExplorationTile = (pawn: HeroPawn, pawnColIndex: number, pawnRowIndex: number) => {
+    const currentTile = tilesState.find(tile => tile.gridPosition[0] === pawn.gridPosition[0] && tile.gridPosition[1] === pawn.gridPosition[1])
     if (currentTile) {
       const pawnRow = currentTile.spaces!.filter((row, rowIndex) => rowIndex === pawnRowIndex).flat(1)
       const pawnSpace = pawnRow.find((col, colIndex) => colIndex === pawnColIndex)
       const spaceDetails = pawnSpace?.details as any
-      if (pawnSpace && pawnSpace.type === "exploration") {
-
+      if (pawnSpace && pawnSpace.type === "exploration" && spaceDetails.color === pawn.color) {
         if (spaceDetails.exploreDirection === "up") {
           const tileExists = tilesState.find(tile => tile.gridPosition[0] === currentTile.gridPosition[0] && tile.gridPosition[1] === currentTile.gridPosition[1] - 1)
           if (tileExists) return
@@ -67,8 +61,6 @@ const Board = () => {
         }
       }
     }
-
-    // return allTiles
   }
 
 
@@ -76,7 +68,7 @@ const Board = () => {
     const placeholderTiles = [...availableArea];
 
     const highlightAreas = Object.entries(pawnState).map(([color, pawn]) => {
-      return getExplorationTile(pawn.gridPosition, pawn.position[0], pawn.position[1]) 
+      return getExplorationTile(pawn, pawn.position[0], pawn.position[1]) 
     }).filter(gridPos => gridPos) as TileInterface[]
 
     highlightAreas.forEach(newArea => {

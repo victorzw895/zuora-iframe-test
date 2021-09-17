@@ -5,7 +5,7 @@ export type heroAbility = "disableSecurityCamera" | "revealExtraTile" | "weCanTa
 
 export type playerNumber = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
 export type direction = "up" | "right" | "down" | "left"
-type basicAbility = "reveal" | "teleport" | "escalator" | null
+export type basicAbility = "explore" | "teleport" | "escalator"
 
 
 export interface SandTimer {
@@ -15,13 +15,20 @@ export interface SandTimer {
   swapActions: () => void
 }
 
+export interface Game {
+  roomId: string,
+  players: Player[],
+  gameStarted: boolean
+}
+
 export interface Player {
+  name: string,
   number: playerNumber,
   playerDirections: direction[],
   playerPawnHeld: heroColor | null,
-  playerAbility: basicAbility,
+  playerAbilities: basicAbility[],
   // placeTile: () => void,
-  pingPlayer: (number: playerNumber) => void,
+  pingPlayer: ((number: playerNumber) => void) | null,
 }
 
 type BlockedPosition = {

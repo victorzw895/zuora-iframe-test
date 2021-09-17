@@ -10,10 +10,11 @@ type PlayerProviderProps = {children: React.ReactNode}
 // assign random number
 
 const playerInitialState: Player = {
+  name: "test",
   number: 1,
   playerDirections: ["up", "left", "down", "right"],
   playerPawnHeld: null,
-  playerAbility: null,
+  playerAbilities: [],
   // placeTile: () => void,
   pingPlayer: (number: playerNumber) => {},
 }
