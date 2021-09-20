@@ -17,8 +17,8 @@ export interface SandTimer {
 
 export interface Game {
   roomId: string,
-  players: Player[],
-  gameStarted: boolean
+  // players: Player[],
+  // gameStarted: boolean
 }
 
 export interface Player {

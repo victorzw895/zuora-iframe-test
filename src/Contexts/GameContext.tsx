@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useReducer } from 'react';
 import { HeroPawn, heroName, heroWeapon, heroColor, Game, Player, playerNumber, direction, basicAbility } from '../types';
 
-type Action = {type: 'createRoom', value: String, playerName: string} | 
-              {type: 'joinRoom', value: Game, playerName: string} | 
+type Action = {type: 'joinRoom', value: String, playerName: string} | 
+              // {type: 'joinRoom', value: Game, playerName: string} | 
               {type: 'startGame'} | undefined;
 type Dispatch = (action: Action) => void;
 
@@ -10,7 +10,7 @@ type GameProviderProps = {children: React.ReactNode}
 
 // assign random number
 
-const PlayerFactory = (currentPlayers: number, playerName: string) => {
+export const PlayerFactory = (playerName: string, currentPlayers: number) => {
   return {
     name: playerName,
     number: currentPlayers + 1 as playerNumber,
@@ -23,8 +23,8 @@ const PlayerFactory = (currentPlayers: number, playerName: string) => {
 
 const gameInitialState: Game = {
   roomId: "",
-  players: [],
-  gameStarted: false
+  // players: [],
+  // gameStarted: false
 }
 
 const directions: direction[] = ["up", "right", "down", "left"];
@@ -38,7 +38,7 @@ const randomize = (array: any[]) => {
   })
 }
 
-const assignRandomActions = (players: Player[]) => {
+export const assignRandomActions = (players: Player[]) => {
   const randomPlayerOrder = randomize(players);
   
   return randomPlayerOrder.map(player => {
@@ -122,17 +122,17 @@ const gameReducer = (gameState: Game, action: any) => {
       // ]
       // newState.players = players;
       newState.roomId = action.value;
-      newState.players.push(PlayerFactory(0, action.playerName))
+      // newState.players.push(PlayerFactory(0, action.playerName))
       return newState;
     }
     case 'joinRoom': {
-      newState = action.value;
-      newState.players.push(PlayerFactory(newState.players.length, action.playerName))
+      newState.roomId = action.value;
+      // newState.players.push(PlayerFactory(newState.players.length, action.playerName))
       return newState;
     }
     case 'startGame': {
-      newState.players = assignRandomActions(newState.players);
-      newState.gameStarted = true;
+      // newState.players = assignRandomActions(newState.players);
+      // newState.gameStarted = true;
       return newState;
     }
     default: {

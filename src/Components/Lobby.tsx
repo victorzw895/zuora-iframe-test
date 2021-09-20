@@ -1,10 +1,12 @@
-import React, { useState, ChangeEvent } from 'react';
+import React, { useState, ChangeEvent, useEffect } from 'react';
 import cryptoRandomString from 'crypto-random-string';
-import { useGame } from '../Contexts/GameContext';
+import { useGame, PlayerFactory, assignRandomActions } from '../Contexts/GameContext';
 import { usePlayer } from '../Contexts/PlayerContext';
-import { setConstantValue } from 'typescript';
-import { Game } from '../types';
-import { Stack, Button, TextField, List, ListItem, Paper } from '@mui/material';
+import { Game, playerNumber } from '../types';
+import { Stack, Button, TextField, List, ListItem, Paper, Alert } from '@mui/material';
+import { collection, getDoc, query, where, setDoc, doc, DocumentReference, DocumentData } from "firebase/firestore"; 
+import { firestore } from "../Firestore";
+import { useCollectionData, useDocumentData } from 'react-firebase-hooks/firestore'
 
 interface LobbyProps {
 }
@@ -16,15 +18,36 @@ const Lobby = ({}: LobbyProps) => {
   const [isHost, setIsHost] = useState(false);
   const [promptCode, setPromptCode] = useState(false);
   const [existingRoomCode, setExistingRoomCode] = useState("");
+  const [failJoinRoomMessage, setFailJoinRoomMessage] = useState("");
 
-  const createNewGame = () => {
+  const gamesRef = firestore.collection('games')
+
+  const [gameDoc, setGameDoc] = useState<any>(null);
+
+  const [room] = useDocumentData(gameDoc);
+
+  const createNewGame = async () => {
     const newGameCode = cryptoRandomString({length: 5, type: 'distinguishable'});
     setIsHost(true);
-    gameDispatch({type: "createRoom", value: newGameCode, playerName});
+    gameDispatch({type: "joinRoom", value: newGameCode, playerName});
+    await setDoc(gamesRef.doc(newGameCode), {
+      players: [
+        PlayerFactory(playerName, 0)
+        ],
+      gameStarted: false
+      }
+    )
+    setGameDoc(gamesRef.doc(newGameCode))
   }
 
-  const startGame = () => {
-    gameDispatch({type: "startGame"})
+  const startGame = async () => {
+    const players = assignRandomActions(room.players)
+    console.log(players);
+    await setDoc(
+      gamesRef.doc(gameState.roomId), 
+      {players, gameStarted: true},
+      {merge: true}
+    )
   }
 
   const _handleRoomCode = (e: ChangeEvent<HTMLInputElement>) => {
@@ -35,46 +58,38 @@ const Lobby = ({}: LobbyProps) => {
     setPlayerName(e.target.value)
   }
 
-  const joinRoom = () => {
-    // Find Room on database using existingRoomCode
-    // fetch, value: roomCode
-    const roomFound: Game = {
-      roomId: "roomCode from database",
-      players: [
-        {
-          name: "victor",
-          number: 1,
-          playerDirections: [],
-          playerPawnHeld: null,
-          playerAbilities: [],
-          pingPlayer: null,
-        },
-        {
-          name: "bob",
-          number: 2,
-          playerDirections: [],
-          playerPawnHeld: null,
-          playerAbilities: [],
-          pingPlayer: null,
-        },
-        {
-          name: "Yue",
-          number: 3,
-          playerDirections: [],
-          playerPawnHeld: null,
-          playerAbilities: [],
-          pingPlayer: null,
-        },
-      ],
-      gameStarted: false
+  const joinRoom = async () => {
+    const gamesDocRef = gamesRef.doc(existingRoomCode)
+    const docSnap = await getDoc(gamesDocRef);
+
+    let roomFound;
+
+    if (docSnap.exists()) {
+      roomFound = docSnap.data();
+      setGameDoc(gamesDocRef)
     }
 
     // if found
     if (roomFound && !roomFound.gameStarted && roomFound.players.length <= 8) {
-      gameDispatch({type: "joinRoom", value: roomFound, playerName});
+      const playersInRoom = [
+        ...roomFound.players, 
+        PlayerFactory(playerName, roomFound.players.length)
+      ];
+      gameDispatch({type: "joinRoom", value: existingRoomCode, playerName});
+      await setDoc(gamesRef.doc(existingRoomCode), 
+        {players: playersInRoom},
+        {merge: true}
+      )
     }
-    
-    // else if not found
+    else if (!roomFound) {
+      setFailJoinRoomMessage("Room code not found");
+    }
+    else if (roomFound.gameStarted) {
+      setFailJoinRoomMessage("Game has already started");
+    }
+    else if (roomFound.players.length > 8) {
+      setFailJoinRoomMessage("Game Lobby full");
+    }
   }
 
   return (
@@ -86,10 +101,10 @@ const Lobby = ({}: LobbyProps) => {
       {gameState.roomId ?
         <>
           <h4 className="lobby-code">CODE: {gameState.roomId}</h4>
-          {gameState.players.length && 
+          {room?.players?.length && 
             <List sx={{ width: '100%', maxWidth: 360, bgcolor: '#63B0CD' }}>
               {
-                gameState.players.map(player => {
+                room?.players?.map((player: any) => {
                   return <ListItem key={player.number}>{`${player.number}  ${player.name}`}</ListItem>
                 })
               }
