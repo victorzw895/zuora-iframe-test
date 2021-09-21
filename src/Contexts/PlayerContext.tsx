@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useReducer } from 'react';
-import { HeroPawn, heroName, heroWeapon, heroColor, Player, playerNumber } from '../types';
+import { HeroPawn, heroName, heroWeapon, heroColor, Player, playerNumber, direction } from '../types';
 
 type Action = {type: 'playerHeld', value: number | null, color: heroColor} | 
-              {type: 'movePawn', value: number[], color: heroColor} | undefined;
+              {type: 'showMovableSpaces', value: direction[], color: heroColor} | 
+              {type: 'setPlayer', value: any} | undefined;
 type Dispatch = (action: Action) => void;
 
 type PlayerProviderProps = {children: React.ReactNode}
@@ -10,9 +11,10 @@ type PlayerProviderProps = {children: React.ReactNode}
 // assign random number
 
 const playerInitialState: Player = {
-  name: "test",
-  number: 1,
-  playerDirections: ["up", "left", "down", "right"],
+  name: "",
+  number: null,
+  playerDirections: [],
+  showMovableDirections: [],
   playerPawnHeld: null,
   playerAbilities: [],
   // placeTile: () => void,
@@ -26,6 +28,14 @@ const playerReducer = (playerState: Player, action: any) => {
 
   switch (action.type) {
     case 'playerHeld': {
+      return newState;
+    }
+    case 'showMovableSpaces': {
+      newState.showMovableDirections = action.value;
+      return newState;
+    }
+    case 'setPlayer': {
+      newState = action.value;
       return newState;
     }
     case 'movePawn': {

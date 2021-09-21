@@ -2,11 +2,13 @@ import React, { useState, ChangeEvent, useEffect } from 'react';
 import cryptoRandomString from 'crypto-random-string';
 import { useGame, PlayerFactory, assignRandomActions } from '../Contexts/GameContext';
 import { usePlayer } from '../Contexts/PlayerContext';
+import { usePawn, pawnsInitialState } from '../Contexts/PawnContext';
 import { Game, playerNumber } from '../types';
 import { Stack, Button, TextField, List, ListItem, Paper, Alert } from '@mui/material';
 import { collection, getDoc, query, where, setDoc, doc, DocumentReference, DocumentData } from "firebase/firestore"; 
 import { firestore } from "../Firestore";
-import { useCollectionData, useDocumentData } from 'react-firebase-hooks/firestore'
+import { useDocumentData } from 'react-firebase-hooks/firestore'
+import { tile1a } from '../Data/tile1a';
 
 interface LobbyProps {
 }
@@ -30,10 +32,10 @@ const Lobby = ({}: LobbyProps) => {
     const newGameCode = cryptoRandomString({length: 5, type: 'distinguishable'});
     setIsHost(true);
     gameDispatch({type: "joinRoom", value: newGameCode, playerName});
+    const newPlayer = PlayerFactory(playerName, 0)
+    playerDispatch({type: "setPlayer", value: newPlayer});
     await setDoc(gamesRef.doc(newGameCode), {
-      players: [
-        PlayerFactory(playerName, 0)
-        ],
+      players: [newPlayer],
       gameStarted: false
       }
     )
@@ -42,10 +44,21 @@ const Lobby = ({}: LobbyProps) => {
 
   const startGame = async () => {
     const players = assignRandomActions(room.players)
-    console.log(players);
+    // setInitialTile
+    // setPawnPositions
+
+    const initTile = {
+      ...tile1a,
+      gridPosition: [8, 8]
+    }
     await setDoc(
       gamesRef.doc(gameState.roomId), 
-      {players, gameStarted: true},
+      { 
+        players, 
+        gameStarted: true,
+        tiles: [initTile],
+        pawns: pawnsInitialState
+      },
       {merge: true}
     )
   }
@@ -71,11 +84,13 @@ const Lobby = ({}: LobbyProps) => {
 
     // if found
     if (roomFound && !roomFound.gameStarted && roomFound.players.length <= 8) {
+      const newPlayer = PlayerFactory(playerName, roomFound.players.length);
       const playersInRoom = [
         ...roomFound.players, 
-        PlayerFactory(playerName, roomFound.players.length)
+        newPlayer
       ];
       gameDispatch({type: "joinRoom", value: existingRoomCode, playerName});
+      playerDispatch({type: "setPlayer", value: newPlayer});
       await setDoc(gamesRef.doc(existingRoomCode), 
         {players: playersInRoom},
         {merge: true}

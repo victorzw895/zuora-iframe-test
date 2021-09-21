@@ -3,7 +3,7 @@ export type heroName = "Barbarian" | "Mage" | "Elf" | "Dwarf"
 export type heroWeapon = "sword" | "vial" | "bow" | "axe"
 export type heroAbility = "disableSecurityCamera" | "revealExtraTile" | "weCanTalkAgain" | "iAmTiny"
 
-export type playerNumber = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
+export type playerNumber = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | null
 export type direction = "up" | "right" | "down" | "left"
 export type basicAbility = "explore" | "teleport" | "escalator"
 
@@ -25,6 +25,7 @@ export interface Player {
   name: string,
   number: playerNumber,
   playerDirections: direction[],
+  showMovableDirections: direction[],
   playerPawnHeld: heroColor | null,
   playerAbilities: basicAbility[],
   // placeTile: () => void,
@@ -32,8 +33,8 @@ export interface Player {
 }
 
 type BlockedPosition = {
-  position: number[] | undefined;
-  gridPosition: number[] | undefined;
+  position: number[] | null;
+  gridPosition: number[] | null;
 }
 
 export interface HeroPawn {
@@ -43,15 +44,15 @@ export interface HeroPawn {
   width: number,
   height: number,
   playerHeld: playerNumber | null,
-  resetPlayerHeld: () => void,
+  // resetPlayerHeld: () => void,
   position: number[],
   gridPosition: number[],
   ability: string,
   canUseAbility: boolean,
-  move: () => void,
-  useAbility: () => void,
-  stealWeapon: () => void,
-  escape: () => boolean,
+  // move: () => void,
+  // useAbility: () => void,
+  // stealWeapon: () => void,
+  // escape: () => boolean,
   blockedPositions: {
     up: BlockedPosition,
     down: BlockedPosition,
@@ -65,7 +66,12 @@ export interface TileInterface {
   // width: number,
   // height: number,
   rotation?: number,
-  spaces?: Space[][],
+  spaces?: {
+    0: Space[],
+    1: Space[],
+    2: Space[],
+    3: Space[]
+  },
   gridPosition: number[],
   placementDirection?: direction,
   entryDirection?: direction,

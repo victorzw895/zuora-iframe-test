@@ -3,7 +3,11 @@ import { TileInterface, direction } from '../types';
 import { tileWallSize, spaceSize } from '../constants';
 import { tile4 } from '../Data/tile4';
 import { tile5 } from '../Data/tile5';
-import { useTiles } from '../Contexts/TilesContext';
+import { useTiles, generateTile } from '../Contexts/TilesContext';
+import { useGame } from '../Contexts/GameContext';
+import { collection, getDoc, query, where, setDoc, doc, DocumentReference, DocumentData } from "firebase/firestore"; 
+import { firestore } from "../Firestore";
+import { useDocumentData } from 'react-firebase-hooks/firestore'
 
 interface NewTileAreaProps {
   tile: TileInterface,
@@ -15,8 +19,20 @@ const NewTileArea = ({tile, clearHighlightAreas}: NewTileAreaProps) => {
 
   const { tilesState, tilesDispatch } = useTiles();
 
-  const addNewTile = (newTile: TileInterface) => {
-    tilesDispatch({type: "addTile", value: newTile})
+  const { gameState, gameDispatch } = useGame();
+
+  const gamesRef = firestore.collection('games')
+
+  const [room] = useDocumentData(gamesRef.doc(gameState.roomId));
+
+  const addNewTile = async (newTile: TileInterface) => {
+    // tilesDispatch({type: "addTile", value: newTile})
+    const tile = generateTile(newTile);
+    await setDoc(
+      gamesRef.doc(gameState.roomId), 
+      {tiles: [...room.tiles, tile]},
+      {merge: true}
+    )
   }
 
   const placeNewTile = (e: MouseEvent<HTMLDivElement>) => {

@@ -1,7 +1,7 @@
 export const tile1a = {
   "id": "1a",
-  "spaces": [
-    [{
+  "spaces": {
+    0: [{
       "type": "timer",
       "details": {
         "isOccupied": false,
@@ -42,7 +42,7 @@ export const tile1a = {
         "color": "purple"
       }
     }],
-    [{
+    1: [{
       "type": "exploration",
       "details": {
         "isOccupied": false,
@@ -78,7 +78,7 @@ export const tile1a = {
         "color": "yellow"
       }
     }],
-    [{
+    2: [{
       "type": "teleporter",
       "details": {
         "isOccupied": false,
@@ -121,7 +121,7 @@ export const tile1a = {
         "hasLoudspeaker": true
       }
     }],
-    [{
+    3: [{
       "type": "teleporter",
       "details": {
         "isOccupied": false,
@@ -155,5 +155,5 @@ export const tile1a = {
     {
       "type": "barrier"
     }]
-  ]
+  }
 }

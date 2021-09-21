@@ -16,7 +16,7 @@ const takePosition = () => {
   return randomPosition.splice(0, 1).flat(1);
 }
 
-const PawnFactory = (color: heroColor, startPosition: number[]) => {
+export const PawnFactory = (color: heroColor, startPosition: number[]) => {
   // console.log('pawn factory', color, startPosition);
   let heroName, weapon;
   switch (color) {
@@ -50,41 +50,41 @@ const PawnFactory = (color: heroColor, startPosition: number[]) => {
     position: startPosition,
     blockedPositions: {
       up: {
-        position: undefined,
-        gridPosition: undefined
+        position: null,
+        gridPosition: null
       },
       left: {
-        position: undefined,
-        gridPosition: undefined
+        position: null,
+        gridPosition: null
       },
       right: {
-        position: undefined,
-        gridPosition: undefined
+        position: null,
+        gridPosition: null
       },
       down: {
-        position: undefined,
-        gridPosition: undefined
+        position: null,
+        gridPosition: null
       }
     },
     gridPosition: [8, 8],
     ability: '',
     canUseAbility: false,
-    move: () => {},
-    useAbility: () => {},
-    stealWeapon: () => {},
-    escape: () => {return false},
-    resetPlayerHeld() {
-      this.playerHeld = null
-    }
+    // move: () => {},
+    // useAbility: () => {},
+    // stealWeapon: () => {},
+    // escape: () => {return false},
+    // resetPlayerHeld() {
+    //   this.playerHeld = null
+    // }
   }
 }
 
 type BlockedPosition = {
-  position: number[] | undefined;
-  gridPosition: number[] | undefined;
+  position: number[] | null;
+  gridPosition: number[] | null;
 }
 
-type BlockedPositions = {
+export type BlockedPositions = {
   up: BlockedPosition,
   down: BlockedPosition,
   left: BlockedPosition,
@@ -104,7 +104,7 @@ export type PawnState = {
 }
 type PawnProviderProps = {children: React.ReactNode}
 
-const pawnsInitialState: PawnState = {
+export const pawnsInitialState: PawnState = {
   yellow: PawnFactory("yellow", takePosition()),
   green: PawnFactory("green", takePosition()),
   purple: PawnFactory("purple", takePosition()),
@@ -118,10 +118,10 @@ const pawnReducer = (pawnState: PawnState, action: any) => {
 
   switch (action.type) {
     case 'playerHeld': 
-      newState.yellow.resetPlayerHeld();
-      newState.green.resetPlayerHeld();
-      newState.purple.resetPlayerHeld();
-      newState.orange.resetPlayerHeld();
+      // newState.yellow.resetPlayerHeld();
+      // newState.green.resetPlayerHeld();
+      // newState.purple.resetPlayerHeld();
+      // newState.orange.resetPlayerHeld();
       newState[action.color as keyof PawnState].playerHeld = action.value;
       return newState;
     case 'movePawn': 

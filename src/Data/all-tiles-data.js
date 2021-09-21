@@ -1,8 +1,8 @@
 export const allTiles = [
   {
     "id": "1a",
-    "spaces": [
-      [{
+    "spaces": {
+      0: [{
         "type": "timer",
         "details": {
           "isOccupied": false,
@@ -43,7 +43,7 @@ export const allTiles = [
           "color": "purple"
         }
       }],
-      [{
+      1: [{
         "type": "exploration",
         "details": {
           "isOccupied": false,
@@ -79,7 +79,7 @@ export const allTiles = [
           "color": "yellow"
         }
       }],
-      [{
+      2: [{
         "type": "teleporter",
         "details": {
           "isOccupied": false,
@@ -122,7 +122,7 @@ export const allTiles = [
           "hasLoudspeaker": true
         }
       }],
-      [{
+      3: [{
         "type": "teleporter",
         "details": {
           "isOccupied": false,
@@ -156,14 +156,14 @@ export const allTiles = [
       {
         "type": "barrier"
       }]
-    ]
+    }
   },
   {
     "id": "2",
     "entrySide": "right",
     "entryDirection": "left",
-    "spaces": [
-      [{
+    "spaces": {
+      0: [{
         "type": "exit",
         "details": {
           "sideWalls": [
@@ -183,7 +183,7 @@ export const allTiles = [
       {
         "type": "barrier"
       }],
-      [{
+      1: [{
         "type": "blank",
         "details": {
           "isOccupied": false,
@@ -214,7 +214,7 @@ export const allTiles = [
           "color": "purple"
         }
       }],
-      [{
+      2: [{
         "type": "barrier"
       },
       {
@@ -240,7 +240,7 @@ export const allTiles = [
           "isEntry": true
         }
       }],
-      [{
+      3: [{
         "type": "barrier"
       },
       {
@@ -278,14 +278,14 @@ export const allTiles = [
           "color": "green"
         }
       }]
-    ]
+    }
   },
   {
     "id": "3",
     "entrySide": "up",
     "entryDirection": "down",
-    "spaces": [
-      [{
+    "spaces": {
+      0: [{
         "type": "barrier",
       },
       {
@@ -312,7 +312,7 @@ export const allTiles = [
       {
         "type": "barrier"
       }],
-      [{
+      1: [{
         "type": "exploration",
         "details": {
           "isOccupied": false,
@@ -355,7 +355,7 @@ export const allTiles = [
           ]
         }
       }],
-      [{
+      2: [{
         "type": "teleporter",
         "details": {
           "isOccupied": false,
@@ -397,7 +397,7 @@ export const allTiles = [
           "color": "purple"
         }
       }],
-      [{
+      3: [{
         "type": "barrier"
       },
       {
@@ -432,14 +432,14 @@ export const allTiles = [
           ]
         }
       }]
-    ]
+    }
   },
   {
     "id": "4",
     "entrySide": "left",
     "entryDirection": "right",
-    "spaces": [
-      [{
+    "spaces": {
+      0: [{
         "type": "barrier",
       },
       {
@@ -460,7 +460,7 @@ export const allTiles = [
       {
         "type": "barrier"
       }],
-      [{
+      1: [{
         "type": "blank",
         "details": {
           "isOccupied": false,
@@ -492,7 +492,7 @@ export const allTiles = [
       {
         "type": "barrier"
       }],
-      [{
+      2:[{
         "type": "barrier"
       },
       {
@@ -525,7 +525,7 @@ export const allTiles = [
           "color": "purple"
         }
       }],
-      [{
+      3: [{
         "type": "barrier"
       },
       {
@@ -557,14 +557,14 @@ export const allTiles = [
           "color": "yellow"
         }
       }]
-    ]
+    }
   },
   {
     "id": "5",
     "entrySide": "left",
     "entryDirection": "right",
-    "spaces": [
-      [{
+    "spaces": {
+      0: [{
         "type": "barrier",
       },
       {
@@ -601,7 +601,7 @@ export const allTiles = [
           ]
         }
       }],
-      [{
+      1: [{
         "type": "blank",
         "details": {
           "isOccupied": false,
@@ -641,7 +641,7 @@ export const allTiles = [
           ]
         }
       }],
-      [{
+      2: [{
         "type": "blank",
         "details": {
           "isOccupied": false,
@@ -681,7 +681,7 @@ export const allTiles = [
           "color": "orange"
         }
       }],
-      [{
+      3: [{
         "type": "barrier"
       },
       {
@@ -717,14 +717,14 @@ export const allTiles = [
           ]
         }
       }]
-    ]
+    }
   },
   {
     "id": "6",
     "entrySide": "right",
     "entryDirection": "left",
-    "spaces": [
-      [{
+    "spaces": {
+      0: [{
         "type": "barrier",
       },
       {
@@ -746,7 +746,7 @@ export const allTiles = [
       {
         "type": "barrier"
       }],
-      [{
+      1: [{
         "type": "exploration",
         "details": {
           "isOccupied": false,
@@ -781,7 +781,7 @@ export const allTiles = [
       {
         "type": "barrier"
       }],
-      [{
+      2: [{
         "type": "barrier"
       },
       {
@@ -814,7 +814,7 @@ export const allTiles = [
           "isEntry": true
         }
       }],
-      [{
+      3: [{
         "type": "barrier"
       },
       {
@@ -844,14 +844,14 @@ export const allTiles = [
           "color": "purple"
         }
       }]
-    ]
+    }
   },
   {
     "id": "7",
     "entrySide": "down",
     "entryDirection": "up",
-    "spaces": [
-      [{
+    "spaces": {
+      0: [{
         "type": "barrier",
       },
       {
@@ -872,7 +872,7 @@ export const allTiles = [
       {
         "type": "barrier"
       }],
-      [{
+      1: [{
         "type": "blank",
         "details": {
           "isOccupied": false,
@@ -913,7 +913,7 @@ export const allTiles = [
           ]
         }
       }],
-      [{
+      2: [{
         "type": "weapon",
         "details": {
           "isOccupied": false,
@@ -943,7 +943,7 @@ export const allTiles = [
           "color": "purple"
         }
       }],
-      [{
+      3: [{
         "type": "barrier"
       },
       {
@@ -975,14 +975,14 @@ export const allTiles = [
           "color": "yellow"
         }
       }]
-    ]
+    }
   },
   {
     "id": "8",
     "entrySide": "down",
     "entryDirection": "up",
-    "spaces": [
-      [{
+    "spaces": {
+      0: [{
         "type": "blank",
         "details": {
           "isOccupied": false,
@@ -1021,7 +1021,7 @@ export const allTiles = [
           ]
         }
       }],
-      [{
+      1: [{
         "type": "exploration",
         "details": {
           "isOccupied": false,
@@ -1058,7 +1058,7 @@ export const allTiles = [
           ],
         }
       }],
-      [{
+      2: [{
           "type": "barrier"
         },
         {
@@ -1078,7 +1078,7 @@ export const allTiles = [
             "color": "purple"
           }
       }],
-      [{
+      3: [{
           "type": "weapon",
           "details": {
             "isOccupied": false,
@@ -1121,14 +1121,14 @@ export const allTiles = [
           "isEntry": true
         }
       }]
-    ]
+    }
   },
   {
     "id": "9",
     "entrySide": "left",
     "entryDirection": "right",
-    "spaces": [
-      [{
+    "spaces": {
+      0: [{
         "type": "barrier"
       },
       {
@@ -1162,7 +1162,7 @@ export const allTiles = [
           ]
         }
       }],
-      [{
+      1: [{
         "type": "blank",
         "details": {
           "isOccupied": false,
@@ -1196,7 +1196,7 @@ export const allTiles = [
           ]
         }
       }],
-      [{
+      2: [{
         "type": "barrier"
       },
       {
@@ -1224,7 +1224,7 @@ export const allTiles = [
           ]
         }
       }],
-      [{
+      3: [{
         "type": "weapon",
         "details": {
           "isOccupied": false,
@@ -1267,14 +1267,14 @@ export const allTiles = [
           ]
         }
       }]
-    ]
+    }
   },
   {
     "id": "10",
     "entrySide": "right",
     "entryDirection": "left",
-    "spaces": [
-      [{
+    "spaces": {
+      0: [{
         "type": "barrier"
       },
       {
@@ -1295,7 +1295,7 @@ export const allTiles = [
       {
         "type": "barrier"
       }],
-      [{
+      1: [{
         "type": "teleporter",
         "details": {
           "isOccupied": false,
@@ -1332,7 +1332,7 @@ export const allTiles = [
           ]
         }
       }],
-      [{
+      2: [{
         "type": "blank",
         "details": {
           "isOccupied": false
@@ -1363,7 +1363,7 @@ export const allTiles = [
           "isEntry": true
         }
       }],
-      [{
+      3: [{
         "type": "exit",
         "details": {
           "sideWalls": [
@@ -1400,14 +1400,14 @@ export const allTiles = [
           "color": "green"
         }
       }]
-    ]
+    }
   },
   {
     "id": "11",
     "entrySide": "right",
     "entryDirection": "left",
-    "spaces": [
-      [{
+    "spaces": {
+      0: [{
         "type": "exit",
         "details": {
           "sideWalls": [
@@ -1435,7 +1435,7 @@ export const allTiles = [
       {
         "type": "barrier"
       }],
-      [{
+      1: [{
         "type": "blank",
         "details": {
           "isOccupied": false,
@@ -1476,7 +1476,7 @@ export const allTiles = [
           "color": "yellow"
         }
       }],
-      [{
+      2: [{
         "type": "blank",
         "details": {
           "isOccupied": false,
@@ -1516,7 +1516,7 @@ export const allTiles = [
           "isEntry": true
         }
       }],
-      [{
+      3: [{
         "type": "blank",
         "details": {
           "isOccupied": false,
@@ -1559,14 +1559,14 @@ export const allTiles = [
           ]
         }
       }]
-    ]
+    }
   },
   {
     "id": "12",
     "entrySide": "right",
     "entryDirection": "left",
-    "spaces": [
-      [{
+    "spaces": {
+      0: [{
         "type": "blank",
         "details": {
           "isOccupied": false,
@@ -1595,7 +1595,7 @@ export const allTiles = [
       {
         "type": "barrier"
       }],
-      [{
+      1: [{
         "type": "exploration",
         "details": {
           "isOccupied": false,
@@ -1634,7 +1634,7 @@ export const allTiles = [
           "color": "orange"
         }
       }],
-      [{
+      2: [{
         "type": "blank",
         "details": {
           "isOccupied": false,
@@ -1665,7 +1665,7 @@ export const allTiles = [
           "isEntry": true
         }
       }],
-      [{
+      3: [{
         "type": "exit",
         "details": {
           "sideWalls": [
@@ -1710,6 +1710,6 @@ export const allTiles = [
           "color": "purple"
         }
       }]
-    ]
+    }
   }
 ]

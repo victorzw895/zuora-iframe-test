@@ -30,7 +30,7 @@ function App() {
         <TilesProvider>
           <PawnProvider>
             {
-              gameState.roomId && currentGame?.gameStarted ? 
+              gameState.roomId && currentGame && currentGame.gameStarted ? 
               <Board />
                 : 
               <Lobby />

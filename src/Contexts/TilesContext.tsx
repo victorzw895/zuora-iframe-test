@@ -14,6 +14,40 @@ const tilesInitialState: TileInterface[] = []
 
 const TilesContext = createContext<{tilesState: TileInterface[]; tilesDispatch: Dispatch} | undefined>(undefined);
 
+// export const convertToFS = (tile: TileInterface) => {
+//   const tileSpaces = [...tile.spaces!];
+//   const convertedSpaces = {
+//     0: tileSpaces[0],
+//     1: tileSpaces[1],
+//     2: tileSpaces[2],
+//     3: tileSpaces[3]
+//   }
+
+//   const convertedTile = {
+//     id: tile.id,
+//     spaces: convertedSpaces
+//   }
+
+//   return convertedTile
+// }
+
+// export const convertFromFS = (tile: any) => {
+//   const tileSpaces = tile.spaces;
+//   const convertedSpaces = [
+//     tileSpaces[0],
+//     tileSpaces[1],
+//     tileSpaces[2],
+//     tileSpaces[3]
+//   ]
+
+//   const convertedTile = {
+//     id: tile.id,
+//     spaces: convertedSpaces
+//   }
+
+//   return convertedTile
+// }
+
 type directionValuesType = {
   up: number,
   right: number,
@@ -102,6 +136,46 @@ const updateSpaceDirections = (spaces: Space[][], rotationValue: number) => {
 //   return newTile;
 // }
 
+export const generateTile = (newTileState: TileInterface) => {
+  const newId = availableTiles.pop();
+  const tile = allTiles.find(tile => tile.id === newId?.toString()) as TileInterface;
+  if (!tile) return;
+  const { gridPosition, placementDirection} = newTileState
+  const newTile: TileInterface = {...tile, gridPosition, placementDirection};
+  const tileSpaces = Object.values(newTile.spaces!)
+  const rotationValue = calculateRotation(newTile.placementDirection!, newTile.entryDirection!);
+
+  switch (rotationValue) {
+    case 90:
+      // updateTileDirections(newTile, rotationValue)
+      rotateTileSpaces(tileSpaces);
+      updateSpaceDirections(tileSpaces, rotationValue);
+      break; 
+    case 180:
+      // updateTileDirections(newTile, rotationValue)
+      rotateTileSpaces(tileSpaces);
+      rotateTileSpaces(tileSpaces);
+      updateSpaceDirections(tileSpaces, rotationValue);
+      break;
+    case 270:
+      // updateTileDirections(newTile, rotationValue)
+      rotateTileSpaces(tileSpaces);
+      rotateTileSpaces(tileSpaces);
+      rotateTileSpaces(tileSpaces);
+      updateSpaceDirections(tileSpaces, rotationValue);
+      break;
+    default:
+      break;
+  }
+  
+  return {...newTile, rotation: rotationValue, spaces: {
+    0: tileSpaces[0],
+    1: tileSpaces[1],
+    2: tileSpaces[2],
+    3: tileSpaces[3]
+  }};
+}
+
 const tilesReducer = (tilesState: TileInterface[], action: any) => {
 
   switch (action.type) {
@@ -114,7 +188,7 @@ const tilesReducer = (tilesState: TileInterface[], action: any) => {
       if (!tile) return [...tilesState];
       const { gridPosition, placementDirection} = action.value
       const newTile: TileInterface = {...tile, gridPosition, placementDirection};
-      const tileSpaces = [...newTile.spaces!]
+      const tileSpaces = Object.values(newTile.spaces!)
       const rotationValue = calculateRotation(newTile.placementDirection!, newTile.entryDirection!);
 
       switch (rotationValue) {

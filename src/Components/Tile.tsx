@@ -3,9 +3,13 @@ import Space from './Space';
 import { direction, HeroPawn, TileInterface, Space as SpaceType } from '../types';
 import { tileWallSize, spaceSize } from '../constants';
 import { usePawn } from '../Contexts/PawnContext';
+import { useGame } from '../Contexts/GameContext';
 import { usePlayer } from '../Contexts/PlayerContext';
 import { useTiles } from '../Contexts/TilesContext';
-import { cp } from 'fs';
+import { collection, getDoc, query, where, setDoc, doc, DocumentReference, DocumentData } from "firebase/firestore"; 
+import { firestore } from "../Firestore";
+import { useDocumentData } from 'react-firebase-hooks/firestore'
+import { color } from '@mui/system';
 
 const TileFactory = (id: number) => {
   return {
@@ -18,10 +22,11 @@ const TileFactory = (id: number) => {
 interface tileProps {
   startTile?: boolean | undefined,
   id?: string,
-  tileData: TileInterface,
+  // tileData: TileInterface,
+  tileIndex: number
 }
 
-const Tile = ({startTile, id, tileData}: tileProps) => {
+const Tile = ({startTile, id, tileIndex}: tileProps) => {
   const [showMovableDirections, setShowMovableDirections] = useState<direction[]>([]);
 
   const { playerState, playerDispatch } = usePlayer();
@@ -29,303 +34,230 @@ const Tile = ({startTile, id, tileData}: tileProps) => {
   const { tilesState, tilesDispatch } = useTiles();
   const { yellow, green, purple, orange } = pawnState;
 
-  const directionPositionValue = {
-    "up": -1,
-    "right": 1,
-    "down": 1,
-    "left": -1
-  }
+  const { gameState, gameDispatch } = useGame();
 
-  const getExtraDirectionalSpaces = (tileFound: TileInterface, pawn: HeroPawn, direction: direction) => {
-    let extraSpaces;
-    if (direction === "up" || direction === "down") {
-      extraSpaces = tileFound.spaces?.map((row) => row.filter((col, colIndex) => colIndex === pawn.position[0] + directionPositionValue[direction])).flat(1)
-    }
-    else if (direction === "left" || direction === "right") {
-      extraSpaces = tileFound.spaces?.filter((row, rowIndex) => rowIndex === pawn.position[1] - directionPositionValue[direction]).flat(1)
-    }
-    return extraSpaces
-  }
+  const gamesRef = firestore.collection('games')
+
+  const [room] = useDocumentData(gamesRef.doc(gameState.roomId));
 
 
-  const findDirectionAdjacentTile = (pawn: HeroPawn, alignmentPositionConstant: "row" | "col", direction: direction) => {
-    const positionConstantValue = alignmentPositionConstant === "col" ? 0 : 1;
-    const positionVariantValue = alignmentPositionConstant === "col" ? 1 : 0;
-    if (tilesState.length > 1) {
-      const tileFound = tilesState.find(tile => 
-        tile.gridPosition[positionConstantValue] === pawn.gridPosition[positionConstantValue] &&
-        tile.gridPosition[positionVariantValue] - directionPositionValue[direction] === pawn.gridPosition[positionVariantValue]
-      )
-      return tileFound
-    }
-    return;
-  }
+  // useLayoutEffect(() => {
+  //   (async() => {
+  //     if (room?.pawns?.yellow.playerHeld) {
+  //       // get pawn position
+  //       const pawnPosition = room.pawns.yellow.position;
+  //       const playerDirections = playerState.playerDirections;
+  //       // get player direction
+  //       // showArea for spaces in player direction from pawn position
+        
+  //       const blockedDirections = {
+  //         up: getFirstBlockedSpace(room.pawns.yellow, "up"),
+  //         right: getFirstBlockedSpace(room.pawns.yellow, "right"),
+  //         left: getFirstBlockedSpace(room.pawns.yellow, "left"),
+  //         down: getFirstBlockedSpace(room.pawns.yellow, "down"),
+  //       }
+  
+  //       const newRoomValue = {...room};
+  //       newRoomValue.pawns.yellow.blockedPositions = blockedDirections;
+  
+  //       await setDoc(
+  //         gamesRef.doc(gameState.roomId), 
+  //         { 
+  //           pawns: newRoomValue.pawns
+  //         },
+  //         {merge: true}
+  //       )
+  
+  //       // pawnDispatch({type: "addBlockedPositions", value: blockedDirections, color: "yellow"})
+  //       setShowMovableDirections(playerDirections);
+  //     }
+  //   })()
+  // }, [room?.pawns?.yellow.playerHeld])
 
-  const filterRowsOfTargetDirection = (currentTile: TileInterface, pawn: HeroPawn, direction: direction) => {
-    let remainingRows
+  // useLayoutEffect(() => {
+  //   (async() => {
+  //     if (room?.pawns?.orange.playerHeld) {
+  //       // get pawn position
+  //       const pawnPosition = room.pawns.orange.position;
+  //       const playerDirections = playerState.playerDirections;
+  //       // get player direction
+  //       // showArea for spaces in player direction from pawn position
+        
+  //       const blockedDirections = {
+  //         up: getFirstBlockedSpace(room.pawns.orange, "up"),
+  //         right: getFirstBlockedSpace(room.pawns.orange, "right"),
+  //         left: getFirstBlockedSpace(room.pawns.orange, "left"),
+  //         down: getFirstBlockedSpace(room.pawns.orange, "down"),
+  //       }
+  
+  //       const newRoomValue = {...room};
+  //       newRoomValue.pawns.orange.blockedPositions = blockedDirections;
+  
+  //       await setDoc(
+  //         gamesRef.doc(gameState.roomId), 
+  //         { 
+  //           pawns: newRoomValue.pawns
+  //         },
+  //         {merge: true}
+  //       )
+  
+  //       // pawnDispatch({type: "addBlockedPositions", value: blockedDirections, color: "yellow"})
+  //       setShowMovableDirections(playerDirections);
+  //     }
+  //   })()
+  // }, [room?.pawns?.orange.playerHeld])
 
-    if (direction === "left" || direction === "right") {
-      remainingRows = currentTile.spaces?.filter((row, rowIndex) => rowIndex === pawn.position[1])
-    }
-    else if (direction === "up") {
-      remainingRows = currentTile.spaces?.filter((row, rowIndex) => rowIndex < pawn.position[1])
-    }
-    else if (direction === "down") {
-      remainingRows = currentTile.spaces?.filter((row, rowIndex) => rowIndex > pawn.position[1])
-    }
-    
-    if (remainingRows) {
-      return remainingRows;
-    }
-  }
+  // useLayoutEffect(() => {
+  //   (async() => {
+  //     if (room?.pawns?.green.playerHeld) {
+  //       // get pawn position
+  //       const pawnPosition = room.pawns.green.position;
+  //       const playerDirections = playerState.playerDirections;
+  //       // get player direction
+  //       // showArea for spaces in player direction from pawn position
+        
+  //       const blockedDirections = {
+  //         up: getFirstBlockedSpace(room.pawns.green, "up"),
+  //         right: getFirstBlockedSpace(room.pawns.green, "right"),
+  //         left: getFirstBlockedSpace(room.pawns.green, "left"),
+  //         down: getFirstBlockedSpace(room.pawns.green, "down"),
+  //       }
+  
+  //       const newRoomValue = {...room};
+  //       newRoomValue.pawns.green.blockedPositions = blockedDirections;
+  
+  //       await setDoc(
+  //         gamesRef.doc(gameState.roomId), 
+  //         { 
+  //           pawns: newRoomValue.pawns
+  //         },
+  //         {merge: true}
+  //       )
+  
+  //       // pawnDispatch({type: "addBlockedPositions", value: blockedDirections, color: "green"})
+  //       setShowMovableDirections(playerDirections);
+  //     }
+  //   })()
+  // }, [room?.pawns?.green.playerHeld])
 
-  const filterSpacesFromRows = (rows: SpaceType[][], pawn: HeroPawn, direction: direction) => {
-    if (!rows) return;
+  // useLayoutEffect(() => {
+  //   (async() => {
+  //     if (room?.pawns?.purple.playerHeld) {
+  //       // get pawn position
+  //       const pawnPosition = room.pawns.purple.position;
+  //       const playerDirections = playerState.playerDirections;
+  //       // get player direction
+  //       // showArea for spaces in player direction from pawn position
+        
+  //       const blockedDirections = {
+  //         up: getFirstBlockedSpace(room.pawns.purple, "up"),
+  //         right: getFirstBlockedSpace(room.pawns.purple, "right"),
+  //         left: getFirstBlockedSpace(room.pawns.purple, "left"),
+  //         down: getFirstBlockedSpace(room.pawns.purple, "down"),
+  //       }
+  
+  //       const newRoomValue = {...room};
+  //       newRoomValue.pawns.purple.blockedPositions = blockedDirections;
+  
+  //       await setDoc(
+  //         gamesRef.doc(gameState.roomId), 
+  //         { 
+  //           pawns: newRoomValue.pawns
+  //         },
+  //         {merge: true}
+  //       )
+  
+  //       // pawnDispatch({type: "addBlockedPositions", value: blockedDirections, color: "purple"})
+  //       setShowMovableDirections(playerDirections);
+  //     }
+  //   })()
+  // }, [room?.pawns?.purple.playerHeld])
 
-    let remainingSpaces
-
-    if (direction === "up" || direction === "down") {
-      remainingSpaces = rows.map((row, rowIndex) => row.filter((col, colIndex) => colIndex === pawn.position[0]))
-    }
-    else if (direction === "right") {
-      remainingSpaces = rows.map((row, rowIndex) => row.filter((col, colIndex) => colIndex > pawn.position[0]))
-    }
-    else if (direction === "left") {
-      remainingSpaces = rows.map((row, rowIndex) => row.filter((col, colIndex) => colIndex < pawn.position[0]))
-    }
-    
-    if (remainingSpaces) {
-      return remainingSpaces.flat(1);
-    }
-  }
-
-  const getAllDirectionalSpaces = (pawn: HeroPawn, direction: direction) => {
-    const directionalSpaces = [];
-    const currentTile = tilesState.find(tile => tile.gridPosition[0] === pawn.gridPosition[0] && tile.gridPosition[1] === pawn.gridPosition[1]);
-    const rows = filterRowsOfTargetDirection(currentTile!, pawn, direction) || [];
-    const spaces = filterSpacesFromRows(rows, pawn, direction) || [];
-
-    let adjacentTileFound;
-    let extraSpaces = [];
-    
-    if (
-      (direction === "up" && pawn.position[0] === 2) ||
-      (direction === "down" && pawn.position[0] === 1)
-    ) {
-      adjacentTileFound = findDirectionAdjacentTile(pawn, "col", direction);
-    }
-    else if (
-      (direction === "left" && pawn.position[1] === 1) ||
-      (direction === "right" && pawn.position[1] === 2)
-    ) {
-      adjacentTileFound = findDirectionAdjacentTile(pawn, "row", direction);
-    }
-
-    if (adjacentTileFound) {
-      extraSpaces.push(...getExtraDirectionalSpaces(adjacentTileFound, pawn, direction) || []);
-    }
-
-
-    if (direction === "right" || direction === "down") {
-      directionalSpaces.push(...spaces, ...extraSpaces);
-    }
-    else if (direction === "up" || direction === "left") {
-      directionalSpaces.push(...spaces.reverse(), ...extraSpaces.reverse());
-    }
-    return directionalSpaces;
-  }
-
-  const isSpaceOccupied = (tileGridPosition: number[], colIndex: number, rowIndex: number) => {
-    return Object.entries(pawnState).some(([color, pawn]) => {
-      if (pawn.gridPosition[0] !== tileGridPosition[0] || pawn.gridPosition[1] !== tileGridPosition[1]) {
-        return false;
-      }
-      return pawn.position[0] === colIndex && pawn.position[1] === rowIndex;
-    })
-  }
-
-  const getFirstBlockedSpace = (pawn: HeroPawn, direction: direction) => {
-    const pawnPosition = pawn.position;
-    const startCol = pawnPosition[0];
-    const startRow = pawnPosition[1];
-
-    const currentTile = tilesState.find(tile => tile.gridPosition[0] === pawn.gridPosition[0] && tile.gridPosition[1] === pawn.gridPosition[1]);
-    if (currentTile) {
-      const tileRow = currentTile.spaces?.find((row, rowIndex) => rowIndex === startRow);
-      const currentSpace = tileRow?.find((col, colIndex) => colIndex === startCol);
-      if (currentSpace && currentSpace.details?.sideWalls?.includes(direction)) {
-        return {
-          position: [startCol, startRow],
-          gridPosition: currentTile.gridPosition
-        }
-      }
-    }
-
-    const allSpaces = getAllDirectionalSpaces(pawn, direction);
-
-    let firstBlockedSpacePosition;
-    let blockedSpaceGridPosition;
-
-    const spacesInCurrentTile = allSpaces.length < 4 ? allSpaces.length : allSpaces.length - 4;
-    
-    let startIndexAlignment = 0;
-    let changeInRow = false;
-    let readArrayBackwards = false;
-    let wallDirection: direction = "up"
-
-    if (direction === "up") {
-      startIndexAlignment = startRow - 1;
-      readArrayBackwards = true;
-      changeInRow = true;
-      wallDirection = "down"
-    }
-    else if (direction === "down") {
-      startIndexAlignment = startRow + 1;
-      changeInRow = true;
-      wallDirection = "up"
-    }
-    else if (direction === "right") {
-      startIndexAlignment = startCol + 1;
-      wallDirection = "left"
-    }
-    else if (direction === "left") {
-      startIndexAlignment = startCol - 1;
-      readArrayBackwards = true;
-      wallDirection = "right"
-    }
-
-    for (let i = 0; i <= allSpaces.length - 1; i++) {
-      const indexInCurrentTile = readArrayBackwards ? startIndexAlignment - i : startIndexAlignment + i;
-      const indexInAdjacentTile = readArrayBackwards ? allSpaces.length - 1 - i : i - spacesInCurrentTile;
-
-      const changeIndex = i < spacesInCurrentTile ? indexInCurrentTile : indexInAdjacentTile; // col for left
-      let colIndex = changeInRow ? pawn.position[0] : changeIndex;
-      let rowIndex = changeInRow ? changeIndex : pawn.position[1];
-
-      let gridChangeIndex = 0 // 0 option for current tile
-      let gridColIndex = pawn.gridPosition[0];
-      let gridRowIndex = pawn.gridPosition[1];
-
-      if (i >= spacesInCurrentTile) {
-        gridChangeIndex = readArrayBackwards ? -1 : 1;        
-        if (changeInRow) {
-          colIndex = colIndex + gridChangeIndex;
-          gridRowIndex = pawn.gridPosition[1] + gridChangeIndex;
-        }
-        else {
-          rowIndex = rowIndex - gridChangeIndex;
-          gridColIndex = pawn.gridPosition[0] + gridChangeIndex;
-        }
-      }
+  // useLayoutEffect(() => {
+  //   if (yellow.playerHeld) {
+  //     // get pawn position
+  //     const pawnPosition = yellow.position;
+  //     const playerDirections = playerState.playerDirections;
+  //     // get player direction
+  //     // showArea for spaces in player direction from pawn position
       
-      if (allSpaces[i].details?.sideWalls?.includes(wallDirection) || allSpaces[i].type === "barrier") {
-        firstBlockedSpacePosition = [colIndex , rowIndex];
-        blockedSpaceGridPosition = [gridColIndex, gridRowIndex];
-        break;
-      }
-      else if (isSpaceOccupied([gridColIndex, gridRowIndex], colIndex, rowIndex)) { // NOTE colIndex and rowIndex need to change
-        firstBlockedSpacePosition = [colIndex, rowIndex];
-        blockedSpaceGridPosition = [gridColIndex, gridRowIndex];
-        break;
-      }
-    }
+  //     const blockedDirections = {
+  //       up: getFirstBlockedSpace(yellow, "up"),
+  //       right: getFirstBlockedSpace(yellow, "right"),
+  //       left: getFirstBlockedSpace(yellow, "left"),
+  //       down: getFirstBlockedSpace(yellow, "down"),
+  //     }
 
-    const firstBlocked = {
-      position: firstBlockedSpacePosition,
-      gridPosition: blockedSpaceGridPosition
-    }
+  //     pawnDispatch({type: "addBlockedPositions", value: blockedDirections, color: "yellow"})
+  //     setShowMovableDirections(playerDirections);
+  //   }
+  // }, [yellow.playerHeld])
 
-    if (pawn.color === "green" && direction === "down") {
-      console.log("here", pawn.gridPosition, firstBlocked)
-    }
-
-    return firstBlocked;
-  }
-
-  useLayoutEffect(() => {
-    if (yellow.playerHeld) {
-      // get pawn position
-      const pawnPosition = yellow.position;
-      const playerDirections = playerState.playerDirections;
-      // get player direction
-      // showArea for spaces in player direction from pawn position
+  // useLayoutEffect(() => {
+  //   if (orange.playerHeld) {
+  //     // get pawn position
+  //     const pawnPosition = orange.position;
+  //     const playerDirections = playerState.playerDirections;
+  //     // get player direction
+  //     // showArea for spaces in player direction from pawn position
       
-      const blockedDirections = {
-        up: getFirstBlockedSpace(yellow, "up"),
-        right: getFirstBlockedSpace(yellow, "right"),
-        left: getFirstBlockedSpace(yellow, "left"),
-        down: getFirstBlockedSpace(yellow, "down"),
-      }
+  //     const blockedDirections = {
+  //       up: getFirstBlockedSpace(orange, "up"),
+  //       right: getFirstBlockedSpace(orange, "right"),
+  //       left: getFirstBlockedSpace(orange, "left"),
+  //       down: getFirstBlockedSpace(orange, "down"),
+  //     }
 
-      pawnDispatch({type: "addBlockedPositions", value: blockedDirections, color: "yellow"})
-      setShowMovableDirections(playerDirections);
-    }
-  }, [yellow.playerHeld])
+  //     pawnDispatch({type: "addBlockedPositions", value: blockedDirections, color: "orange"})
+  //     setShowMovableDirections(playerDirections);
+  //   }
 
-  useLayoutEffect(() => {
-    if (orange.playerHeld) {
-      // get pawn position
-      const pawnPosition = orange.position;
-      const playerDirections = playerState.playerDirections;
-      // get player direction
-      // showArea for spaces in player direction from pawn position
+  // }, [orange.playerHeld])
+
+  // useLayoutEffect(() => {
+  //   if (green.playerHeld) {
+  //     // get pawn position
+  //     const pawnPosition = green.position;
+  //     const playerDirections = playerState.playerDirections;
+  //     // get player direction
+  //     // showArea for spaces in player direction from pawn position
       
-      const blockedDirections = {
-        up: getFirstBlockedSpace(orange, "up"),
-        right: getFirstBlockedSpace(orange, "right"),
-        left: getFirstBlockedSpace(orange, "left"),
-        down: getFirstBlockedSpace(orange, "down"),
-      }
+  //     const blockedDirections = {
+  //       up: getFirstBlockedSpace(green, "up"),
+  //       right: getFirstBlockedSpace(green, "right"),
+  //       left: getFirstBlockedSpace(green, "left"),
+  //       down: getFirstBlockedSpace(green, "down"),
+  //     }
 
-      pawnDispatch({type: "addBlockedPositions", value: blockedDirections, color: "orange"})
-      setShowMovableDirections(playerDirections);
-    }
+  //     pawnDispatch({type: "addBlockedPositions", value: blockedDirections, color: "green"})
+  //     setShowMovableDirections(playerDirections);
+  //   }
+  // }, [green.playerHeld])
 
-  }, [orange.playerHeld])
-
-  useLayoutEffect(() => {
-    if (green.playerHeld) {
-      // get pawn position
-      const pawnPosition = green.position;
-      const playerDirections = playerState.playerDirections;
-      // get player direction
-      // showArea for spaces in player direction from pawn position
+  // useLayoutEffect(() => {
+  //   if (purple.playerHeld) {
+  //     // get pawn position
+  //     const pawnPosition = purple.position;
+  //     const playerDirections = playerState.playerDirections;
+  //     // get player direction
+  //     // showArea for spaces in player direction from pawn position
       
-      const blockedDirections = {
-        up: getFirstBlockedSpace(green, "up"),
-        right: getFirstBlockedSpace(green, "right"),
-        left: getFirstBlockedSpace(green, "left"),
-        down: getFirstBlockedSpace(green, "down"),
-      }
+  //     const blockedDirections = {
+  //       up: getFirstBlockedSpace(purple, "up"),
+  //       right: getFirstBlockedSpace(purple, "right"),
+  //       left: getFirstBlockedSpace(purple, "left"),
+  //       down: getFirstBlockedSpace(purple, "down"),
+  //     }
 
-      pawnDispatch({type: "addBlockedPositions", value: blockedDirections, color: "green"})
-      setShowMovableDirections(playerDirections);
-    }
-  }, [green.playerHeld])
+  //     pawnDispatch({type: "addBlockedPositions", value: blockedDirections, color: "purple"})
 
-  useLayoutEffect(() => {
-    if (purple.playerHeld) {
-      // get pawn position
-      const pawnPosition = purple.position;
-      const playerDirections = playerState.playerDirections;
-      // get player direction
-      // showArea for spaces in player direction from pawn position
-      
-      const blockedDirections = {
-        up: getFirstBlockedSpace(purple, "up"),
-        right: getFirstBlockedSpace(purple, "right"),
-        left: getFirstBlockedSpace(purple, "left"),
-        down: getFirstBlockedSpace(purple, "down"),
-      }
-
-      pawnDispatch({type: "addBlockedPositions", value: blockedDirections, color: "purple"})
-
-        setShowMovableDirections(playerDirections);
-    }
-  }, [purple.playerHeld])
+  //       setShowMovableDirections(playerDirections);
+  //   }
+  // }, [purple.playerHeld])
 
   const tileHasBlockedSpace = (tileData: TileInterface, direction: direction, pawnHeld: HeroPawn) => {
-    if (showMovableDirections.includes(direction)) {
+    console.log(playerState);
+    if (playerState?.showMovableDirections?.includes(direction)) {
       if (pawnHeld.blockedPositions[direction].gridPosition && pawnHeld.blockedPositions[direction].position) {
         if (tileData.gridPosition[0] === pawnHeld.blockedPositions[direction].gridPosition![0] &&
             tileData.gridPosition[1] === pawnHeld.blockedPositions[direction].gridPosition![1]) {
@@ -342,217 +274,232 @@ const Tile = ({startTile, id, tileData}: tileProps) => {
 
   
   return (
-    <div className={`tile ${id === '1a' ? "start-tile" : ""}`} 
-      style={
-        {
-          gridColumnStart: tileData.gridPosition[0],
-          gridRowStart: tileData.gridPosition[1],
-          marginTop: tileData.gridPosition[0] < 8 ? getDisplacementValue(tileData.gridPosition[0]) : tileWallSize,
-          marginBottom: tileData.gridPosition[0] > 8 ? getDisplacementValue(tileData.gridPosition[0]) : tileWallSize,
-          marginLeft: tileData.gridPosition[1] > 8 ? getDisplacementValue(tileData.gridPosition[1]) : tileWallSize,
-          marginRight: tileData.gridPosition[1] < 8 ? getDisplacementValue(tileData.gridPosition[1]) : tileWallSize,
-          placeSelf: "center"
-        }
-      }>
-      {tileData.spaces && tileData.spaces.map((row, rowIndex) => {
-        // let rowBlocked = true;
-        return (
-          <div className="row" key={`row${rowIndex}`}>
-            {row.map((space, colIndex) => {
-              let highlightSpace = false;
-              let colorHeld: HeroPawn | undefined;
+    <>
+      {room ?
+        <div className={`tile ${id === '1a' ? "start-tile" : ""}`} 
+          style={
+            {
+              gridColumnStart: room.tiles[tileIndex].gridPosition[0],
+              gridRowStart: room.tiles[tileIndex].gridPosition[1],
+              marginTop: room.tiles[tileIndex].gridPosition[0] < 8 ? getDisplacementValue(room.tiles[tileIndex].gridPosition[0]) : tileWallSize,
+              marginBottom: room.tiles[tileIndex].gridPosition[0] > 8 ? getDisplacementValue(room.tiles[tileIndex].gridPosition[0]) : tileWallSize,
+              marginLeft: room.tiles[tileIndex].gridPosition[1] > 8 ? getDisplacementValue(room.tiles[tileIndex].gridPosition[1]) : tileWallSize,
+              marginRight: room.tiles[tileIndex].gridPosition[1] < 8 ? getDisplacementValue(room.tiles[tileIndex].gridPosition[1]) : tileWallSize,
+              placeSelf: "center"
+            }
+          }>
+          {room.tiles[tileIndex].spaces && Object.values(room.tiles[tileIndex].spaces).map((row: any, rowIndex) => {
+            // let rowBlocked = true;
+            return (
+              <div className="row" key={`row${rowIndex}`}>
+                {row.map((space: any, colIndex: number) => {
+                  let highlightSpace = false;
+                  let colorHeld: HeroPawn | undefined;
 
-              if (yellow.playerHeld) colorHeld = yellow;
-              if (orange.playerHeld) colorHeld = orange;
-              if (green.playerHeld) colorHeld = green;
-              if (purple.playerHeld) colorHeld = purple;
+                  if (room?.pawns?.yellow.playerHeld) colorHeld = room?.pawns?.yellow;
+                  if (room?.pawns?.orange.playerHeld) colorHeld = room?.pawns?.orange;
+                  if (room?.pawns?.green.playerHeld) colorHeld = room?.pawns?.green;
+                  if (room?.pawns?.purple.playerHeld) colorHeld = room?.pawns?.purple;
 
-              if (colorHeld) {
-                if (tileData.gridPosition[0] !== colorHeld.gridPosition[0] || tileData.gridPosition[1] !== colorHeld.gridPosition[1]) {
-                  let rowBlocked = true;
-                  
-                  if (tileData.gridPosition[0] === colorHeld.gridPosition[0] && 
-                    tileData.gridPosition[1] === colorHeld.gridPosition[1] - 1) {
-                    if (tileHasBlockedSpace(tileData, "up", colorHeld)) {
-                      if (colIndex === colorHeld.blockedPositions.up.position![0]) {
-                        if (rowIndex <= colorHeld.blockedPositions.up.position![1]) {
-                          rowBlocked = true;
-                        }
-                        else if (rowIndex > colorHeld.blockedPositions.up.position![1]) {
-                          rowBlocked = false;
+                  const player = room.players.find((player: any) => player.number === playerState.number)
+                  console.log("player", player)
+                  if (colorHeld && colorHeld.playerHeld === player.number && playerState?.showMovableDirections?.length) {
+                    console.log("colorHeld", colorHeld)
+                    if (room.tiles[tileIndex].gridPosition[0] !== colorHeld.gridPosition[0] || room.tiles[tileIndex].gridPosition[1] !== colorHeld.gridPosition[1]) {
+                      let rowBlocked = true;
+                      if (player.playerDirections.includes("up")) {
+                        if (room.tiles[tileIndex].gridPosition[0] === colorHeld.gridPosition[0] && 
+                          room.tiles[tileIndex].gridPosition[1] === colorHeld.gridPosition[1] - 1) {
+                          if (tileHasBlockedSpace(room.tiles[tileIndex], "up", colorHeld)) {
+                            if (colIndex === colorHeld.blockedPositions.up.position![0]) {
+                              if (rowIndex <= colorHeld.blockedPositions.up.position![1]) {
+                                rowBlocked = true;
+                              }
+                              else if (rowIndex > colorHeld.blockedPositions.up.position![1]) {
+                                rowBlocked = false;
+                              }
+                            }
+                          }
+                          else {
+                            if (colIndex === colorHeld.position[0] - 1 && colorHeld.position[0] === 2) {
+                              if (!colorHeld.blockedPositions.up.gridPosition) {
+                                rowBlocked = false;
+                              }
+                            }
+                          }
                         }
                       }
-                    }
-                    else {
-                      if (colIndex === colorHeld.position[0] - 1 && colorHeld.position[0] === 2) {
-                        if (!colorHeld.blockedPositions.up.gridPosition) {
-                          rowBlocked = false;
-                        }
-                      }
-                    }
-                  }
 
+                      if (player.playerDirections.includes("left")) {
+                        if (room.tiles[tileIndex].gridPosition[0] === colorHeld.gridPosition[0] - 1 && 
+                          room.tiles[tileIndex].gridPosition[1] === colorHeld.gridPosition[1]) {
+                          if (tileHasBlockedSpace(room.tiles[tileIndex], "left", colorHeld) && player.playerDirections.includes("left")) {
+                            if (rowIndex === colorHeld.blockedPositions.left.position![1]) {
+                              if (colIndex <= colorHeld.blockedPositions.left.position![0]) {
+                                rowBlocked = true;
+                              }
+                              else if (colIndex > colorHeld.blockedPositions.left.position![0]) {
+                                rowBlocked = false;
+                              }
+                            }
+                          }
+                          else {
+                            if (rowIndex === colorHeld.position[1] + 1 && colorHeld.position[1] === 1) {
+                              if (!colorHeld.blockedPositions.left.gridPosition) {
+                                rowBlocked = false;
+                              }
+                            }
+                          }
+                        }
+                      }
+                      
+                      if (player.playerDirections.includes("right")) {
+                        if (room.tiles[tileIndex].gridPosition[0] === colorHeld.gridPosition[0] + 1 && 
+                          room.tiles[tileIndex].gridPosition[1] === colorHeld.gridPosition[1]) {
+                          if (tileHasBlockedSpace(room.tiles[tileIndex], "right", colorHeld) && player.playerDirections.includes("right")) {
+                            if (rowIndex === colorHeld.blockedPositions.right.position![1]) {
+                              if (colIndex >= colorHeld.blockedPositions.right.position![0]) {
+                                rowBlocked = true;
+                              }
+                              else if (colIndex < colorHeld.blockedPositions.right.position![0]) {
+                                rowBlocked = false;
+                              }
+                            }
+                          }
+                          else {
+                            if (rowIndex === colorHeld.position[1] - 1 && colorHeld.position[1] === 2) {
+                              if (!colorHeld.blockedPositions.right.gridPosition) {
+                                rowBlocked = false;
+                              }
+                            }
+                          }
+                        }
+                      }
 
-                  if (tileData.gridPosition[0] === colorHeld.gridPosition[0] - 1 && 
-                    tileData.gridPosition[1] === colorHeld.gridPosition[1]) {
-                    if (tileHasBlockedSpace(tileData, "left", colorHeld)) {
-                      if (rowIndex === colorHeld.blockedPositions.left.position![1]) {
-                        if (colIndex <= colorHeld.blockedPositions.left.position![0]) {
-                          rowBlocked = true;
-                        }
-                        else if (colIndex > colorHeld.blockedPositions.left.position![0]) {
-                          rowBlocked = false;
-                        }
-                      }
-                    }
-                    else {
-                      if (rowIndex === colorHeld.position[1] + 1 && colorHeld.position[1] === 1) {
-                        if (!colorHeld.blockedPositions.left.gridPosition) {
-                          rowBlocked = false;
-                        }
-                      }
-                    }
-                  }
-                  
-                  
-                  if (tileData.gridPosition[0] === colorHeld.gridPosition[0] + 1 && 
-                    tileData.gridPosition[1] === colorHeld.gridPosition[1]) {
-                    if (tileHasBlockedSpace(tileData, "right", colorHeld)) {
-                      if (rowIndex === colorHeld.blockedPositions.right.position![1]) {
-                        if (colIndex >= colorHeld.blockedPositions.right.position![0]) {
-                          rowBlocked = true;
-                        }
-                        else if (colIndex < colorHeld.blockedPositions.right.position![0]) {
-                          rowBlocked = false;
+                      if (player.playerDirections.includes("down")) {
+                        if (room.tiles[tileIndex].gridPosition[0] === colorHeld.gridPosition[0] && 
+                          room.tiles[tileIndex].gridPosition[1] === colorHeld.gridPosition[1] + 1) {
+                          if (tileHasBlockedSpace(room.tiles[tileIndex], "down", colorHeld) && player.playerDirections.includes("down")) {
+                            if (colIndex === colorHeld.blockedPositions.down.position![0]) {
+                              if (rowIndex >= colorHeld.blockedPositions.down.position![1]) {
+                                rowBlocked = true;
+                              }
+                              else if (rowIndex < colorHeld.blockedPositions.down.position![1]) {
+                                rowBlocked = false;
+                              }
+                            }
+                          }
+                          else {
+                            if (colIndex === colorHeld.position[0] + 1 && colorHeld.position[0] === 1) {
+                              if (!colorHeld.blockedPositions.down.gridPosition) {
+                                rowBlocked = false;
+                              }
+                            }
+                          }
                         }
                       }
-                    }
-                    else {
-                      if (rowIndex === colorHeld.position[1] - 1 && colorHeld.position[1] === 2) {
-                        if (!colorHeld.blockedPositions.right.gridPosition) {
-                          rowBlocked = false;
-                        }
-                      }
-                    }
-                  }
 
-                  if (tileData.gridPosition[0] === colorHeld.gridPosition[0] && 
-                    tileData.gridPosition[1] === colorHeld.gridPosition[1] + 1) {
-                    if (tileHasBlockedSpace(tileData, "down", colorHeld)) {
-                      if (colIndex === colorHeld.blockedPositions.down.position![0]) {
-                        if (rowIndex >= colorHeld.blockedPositions.down.position![1]) {
-                          rowBlocked = true;
+                      highlightSpace = !rowBlocked
+                    }
+                    else if (room.tiles[tileIndex].gridPosition[0] === colorHeld.gridPosition[0] && room.tiles[tileIndex].gridPosition[1] === colorHeld.gridPosition[1]) {
+                      let rowBlocked = true;
+                      
+                      // column directly above from pawn (up movement)
+                      if (rowIndex < colorHeld.position[1] && colIndex === colorHeld.position[0] && player.playerDirections.includes("up")) {
+                        if (tileHasBlockedSpace(room.tiles[tileIndex], "up", colorHeld)) {
+                          if (colIndex === colorHeld.blockedPositions.up.position![0]) {
+                            if (rowIndex <= colorHeld.blockedPositions.up.position![1]) {
+                              rowBlocked = true;
+                            }
+                            else if (rowIndex > colorHeld.blockedPositions.up.position![1]) {
+                              rowBlocked = false;
+                            }
+                          }
                         }
-                        else if (rowIndex < colorHeld.blockedPositions.down.position![1]) {
+                        else {
                           rowBlocked = false;
                         }
                       }
-                    }
-                    else {
-                      if (colIndex === colorHeld.position[0] + 1 && colorHeld.position[0] === 1) {
-                        if (!colorHeld.blockedPositions.down.gridPosition) {
-                          rowBlocked = false;
+                      else if (colIndex < colorHeld.position[0] && rowIndex === colorHeld.position[1] && player.playerDirections.includes("left")) {
+                        if (tileHasBlockedSpace(room.tiles[tileIndex], "left", colorHeld)) {
+                          if (rowIndex === colorHeld.blockedPositions.left.position![1]) {
+                            if (colIndex <= colorHeld.blockedPositions.left.position![0]) {
+                              rowBlocked = true;
+                            }
+                            else if (colIndex > colorHeld.blockedPositions.left.position![0]) {
+                              
+                              rowBlocked = false;
+                            }
+                          }
                         }
-                      }
-                    }
-                  }
-
-                  highlightSpace = !rowBlocked
-                }
-                else if (tileData.gridPosition[0] === colorHeld.gridPosition[0] && tileData.gridPosition[1] === colorHeld.gridPosition[1]) {
-                  let rowBlocked = true;
-                  
-                  // column directly above from pawn (up movement)
-                  if (rowIndex < colorHeld.position[1] && colIndex === colorHeld.position[0]) {
-                    if (tileHasBlockedSpace(tileData, "up", colorHeld)) {
-                      if (colIndex === colorHeld.blockedPositions.up.position![0]) {
-                        if (rowIndex <= colorHeld.blockedPositions.up.position![1]) {
-                          rowBlocked = true;
-                        }
-                        else if (rowIndex > colorHeld.blockedPositions.up.position![1]) {
-                          rowBlocked = false;
-                        }
-                      }
-                    }
-                    else {
-                      rowBlocked = false;
-                    }
-                  }
-                  else if (colIndex < colorHeld.position[0] && rowIndex === colorHeld.position[1]) {
-                    if (tileHasBlockedSpace(tileData, "left", colorHeld)) {
-                      if (rowIndex === colorHeld.blockedPositions.left.position![1]) {
-                        if (colIndex <= colorHeld.blockedPositions.left.position![0]) {
-                          rowBlocked = true;
-                        }
-                        else if (colIndex > colorHeld.blockedPositions.left.position![0]) {
+                        else {
                           
                           rowBlocked = false;
                         }
                       }
-                    }
-                    else {
-                      
-                      rowBlocked = false;
-                    }
-                  }
-                  else if (colIndex > colorHeld.position[0] && rowIndex === colorHeld.position[1]) {
-                    if (tileHasBlockedSpace(tileData, "right", colorHeld)) {
-                      if (rowIndex === colorHeld.blockedPositions.right.position![1]) {
-                        if (colIndex >= colorHeld.blockedPositions.right.position![0]) {
-                          rowBlocked = true;
+                      else if (colIndex > colorHeld.position[0] && rowIndex === colorHeld.position[1] && player.playerDirections.includes("right")) {
+                        if (tileHasBlockedSpace(room.tiles[tileIndex], "right", colorHeld)) {
+                          if (rowIndex === colorHeld.blockedPositions.right.position![1]) {
+                            if (colIndex >= colorHeld.blockedPositions.right.position![0]) {
+                              rowBlocked = true;
+                            }
+                            else if (colIndex < colorHeld.blockedPositions.right.position![0]) {
+                              rowBlocked = false;
+                            }
+                          }
                         }
-                        else if (colIndex < colorHeld.blockedPositions.right.position![0]) {
+                        else {
                           rowBlocked = false;
                         }
                       }
-                    }
-                    else {
-                      rowBlocked = false;
-                    }
-                  }
-                  else if (rowIndex > colorHeld.position[1] && colIndex === colorHeld.position[0]) {
-                    if (tileHasBlockedSpace(tileData, "down", colorHeld)) {
-                      if (colIndex === colorHeld.blockedPositions.down.position![0]) {
-                        if (rowIndex >= colorHeld.blockedPositions.down.position![1]) {
-                          rowBlocked = true;
+                      else if (rowIndex > colorHeld.position[1] && colIndex === colorHeld.position[0] && player.playerDirections.includes("down")) {
+                        if (tileHasBlockedSpace(room.tiles[tileIndex], "down", colorHeld)) {
+                          if (colIndex === colorHeld.blockedPositions.down.position![0]) {
+                            if (rowIndex >= colorHeld.blockedPositions.down.position![1]) {
+                              rowBlocked = true;
+                            }
+                            else if (rowIndex < colorHeld.blockedPositions.down.position![1]) {
+                              rowBlocked = false;
+                            }
+                          }
                         }
-                        else if (rowIndex < colorHeld.blockedPositions.down.position![1]) {
+                        else {
                           rowBlocked = false;
                         }
                       }
-                    }
-                    else {
-                      rowBlocked = false;
+
+
+                      highlightSpace = !rowBlocked
                     }
                   }
 
-
-                  highlightSpace = !rowBlocked
-                }
-              }
-
-              return (
-                <Space 
-                  key={`space${rowIndex}-${colIndex} ${highlightSpace ? "highlight" : ""}`} 
-                  spaceData={space} 
-                  showMovableArea={highlightSpace} 
-                  colorSelected={colorHeld ? colorHeld.color : null}
-                  spacePosition={[colIndex, rowIndex]} 
-                  gridPosition={[...tileData.gridPosition]}
-                />
-              )
-            })}
-          </div>
-        )
-      })}
-      <img 
-        draggable={false}
-        src={`/${tileData.id}.jpg`} alt={`tile-${tileData.id}`}
-        style={{
-          transform: `rotate(${tileData.rotation}deg)`,
-        }}>
-      </img>
-    </div>
+                  return (
+                    <Space 
+                      key={`space${rowIndex}-${colIndex} ${highlightSpace ? "highlight" : ""}`} 
+                      spaceData={space} 
+                      showMovableArea={highlightSpace} 
+                      colorSelected={colorHeld ? colorHeld.color : null}
+                      spacePosition={[colIndex, rowIndex]} 
+                      gridPosition={[...room.tiles[tileIndex].gridPosition]}
+                    />
+                  )
+                })}
+              </div>
+            )
+          })}
+          <img 
+            draggable={false}
+            src={`/${room.tiles[tileIndex].id}.jpg`} alt={`tile-${room.tiles[tileIndex].id}`}
+            style={{
+              transform: `rotate(${room.tiles[tileIndex].rotation}deg)`,
+            }}>
+          </img>
+        </div>
+            :
+        <>
+        </>
+      }
+    </>
   )
 }
 
