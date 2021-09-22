@@ -3,7 +3,7 @@ import { HeroPawn, heroName, heroWeapon, heroColor, Player, playerNumber, direct
 
 type Action = {type: 'playerHeld', value: number | null, color: heroColor} | 
               {type: 'showMovableSpaces', value: direction[], color: heroColor} | 
-              {type: 'setPlayer', value: any} | undefined;
+              {type: 'setPlayer', value: Player} | undefined;
 type Dispatch = (action: Action) => void;
 
 type PlayerProviderProps = {children: React.ReactNode}
@@ -18,7 +18,7 @@ const playerInitialState: Player = {
   playerPawnHeld: null,
   playerAbilities: [],
   // placeTile: () => void,
-  pingPlayer: (number: playerNumber) => {},
+  // pingPlayer: (number: playerNumber) => {},
 }
 
 const PlayerContext = createContext<{playerState: Player; playerDispatch: Dispatch} | undefined>(undefined);

@@ -1,41 +1,45 @@
-import React, { MouseEvent, useState } from 'react';
-import { TileInterface, direction } from '../types';
+import React, { MouseEvent, useEffect } from 'react';
+import { TileInterface } from '../types';
 import { tileWallSize, spaceSize } from '../constants';
-import { tile4 } from '../Data/tile4';
-import { tile5 } from '../Data/tile5';
-import { useTiles, generateTile } from '../Contexts/TilesContext';
+import { generateTile } from '../Contexts/TilesContext';
 import { useGame } from '../Contexts/GameContext';
-import { collection, getDoc, query, where, setDoc, doc, DocumentReference, DocumentData } from "firebase/firestore"; 
+import { setDoc, doc, getDoc } from "firebase/firestore"; 
 import { firestore } from "../Firestore";
 import { useDocumentData } from 'react-firebase-hooks/firestore'
+
 
 interface NewTileAreaProps {
   tile: TileInterface,
   clearHighlightAreas: (gridPosition: number[]) => void,
 }
 
-const NewTileArea = ({tile, clearHighlightAreas}: NewTileAreaProps) => {
+const areEqual = (prevProps: NewTileAreaProps, nextProps: NewTileAreaProps) => {
+  if (prevProps.tile.placementDirection === nextProps.tile.placementDirection) {
+        return true
+      }
+  return false
+}
+
+const NewTileArea = React.memo(({tile, clearHighlightAreas}: NewTileAreaProps) => {
   const { gridPosition, placementDirection } = tile;
-
-  const { tilesState, tilesDispatch } = useTiles();
-
   const { gameState, gameDispatch } = useGame();
 
-  const gamesRef = firestore.collection('games')
-
-  const [room] = useDocumentData(gamesRef.doc(gameState.roomId));
-
   const addNewTile = async (newTile: TileInterface) => {
-    // tilesDispatch({type: "addTile", value: newTile})
-    const tile = generateTile(newTile);
-    await setDoc(
-      gamesRef.doc(gameState.roomId), 
-      {tiles: [...room.tiles, tile]},
-      {merge: true}
-    )
+    const docRef = doc(firestore, "games", gameState.roomId);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      const tile = generateTile(newTile);
+      await setDoc(
+        docRef, 
+        {tiles: [...docSnap.data().tiles, tile]},
+        {merge: true}
+      )
+    }
   }
 
   const placeNewTile = (e: MouseEvent<HTMLDivElement>) => {
+    console.log("here")
     if (placementDirection) {
       addNewTile({gridPosition, placementDirection} as TileInterface);
     }
@@ -61,8 +65,9 @@ const NewTileArea = ({tile, clearHighlightAreas}: NewTileAreaProps) => {
           placeSelf: "center"
         }
       }>
+       <div></div> 
     </div>
   )
-}
+}, areEqual)
 
 export default NewTileArea;

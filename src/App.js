@@ -4,11 +4,10 @@ import './App.css';
 import { PawnProvider } from './Contexts/PawnContext';
 import { PlayerProvider } from './Contexts/PlayerContext';
 import { TilesProvider } from './Contexts/TilesContext';
-import { GameProvider, useGame } from './Contexts/GameContext';
+import { useGame } from './Contexts/GameContext';
 import Lobby from './Components/Lobby';
-import { collection, getDoc, query, where, setDoc, doc, DocumentReference, DocumentData } from "firebase/firestore"; 
 import { firestore } from "./Firestore";
-import { useCollectionData, useDocumentData } from 'react-firebase-hooks/firestore'
+import { useDocumentData } from 'react-firebase-hooks/firestore'
 
 function App() {
   const { gameState, gameDispatch } = useGame();

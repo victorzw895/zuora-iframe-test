@@ -29,7 +29,7 @@ export interface Player {
   playerPawnHeld: heroColor | null,
   playerAbilities: basicAbility[],
   // placeTile: () => void,
-  pingPlayer: ((number: playerNumber) => void) | null,
+  // pingPlayer: ((number: playerNumber) => void) | null,
 }
 
 type BlockedPosition = {

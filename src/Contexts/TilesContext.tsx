@@ -70,10 +70,6 @@ const calculateRotation = (placementDirection: direction, entryDirection: direct
   let placementDirectionValue = directionValue[placementDirection];
   let entrySideValue = directionValue[entryDirection];
 
-  // console.log("placement Direction", placementDirection, directionValue[placementDirection])
-  // console.log("entry direction", entryDirection, directionValue[entryDirection])
-  // console.log(placementDirectionValue - entrySideValue)
-
   const rotationValue = placementDirectionValue - entrySideValue;
   if (rotationValue === -90) {
     return 270;

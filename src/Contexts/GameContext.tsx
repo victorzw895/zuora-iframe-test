@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer } from 'react';
-import { HeroPawn, heroName, heroWeapon, heroColor, Game, Player, playerNumber, direction, basicAbility } from '../types';
+import { Game, Player, playerNumber, direction, basicAbility } from '../types';
 
 type Action = {type: 'joinRoom', value: String, playerName: string} | 
               // {type: 'joinRoom', value: Game, playerName: string} | 
@@ -15,6 +15,7 @@ export const PlayerFactory = (playerName: string, currentPlayers: number) => {
     name: playerName,
     number: currentPlayers + 1 as playerNumber,
     playerDirections: [],
+    showMovableDirections: [],
     playerPawnHeld: null,
     playerAbilities: [],
     pingPlayer: null,

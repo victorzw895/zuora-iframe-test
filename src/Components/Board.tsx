@@ -1,25 +1,31 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Tile from './Tile';
 import NewTileArea from './NewTileArea';
 import Pawn from './Pieces/Pawn';
 import PlayerArea from './PlayerArea';
-import { TileInterface, direction, HeroPawn } from '../types';
+import { TileInterface, HeroPawn } from '../types';
 import './Board.scss';
-import { usePawn, pawnsInitialState } from '../Contexts/PawnContext';
-import { useTiles } from '../Contexts/TilesContext';
 import { useGame } from '../Contexts/GameContext';
-import { tile1a } from '../Data/tile1a';
 import Draggable from 'react-draggable';
-import { collection, getDoc, query, where, setDoc, doc, DocumentReference, DocumentData } from "firebase/firestore"; 
 import { firestore } from "../Firestore";
 import { useDocumentData } from 'react-firebase-hooks/firestore'
 
-const startTiles = [
-    {gridPosition: [8,7]},
-    {gridPosition: [9,8]},
-    {gridPosition: [8,9]},
-    {gridPosition: [7,8]}
-  ]
+const startTiles = () => {
+  const tiles = []
+  for (let i = 0; i < 16; i++) {
+    for (let j = 0; j < 16; j++) {
+      tiles.push({gridPosition: [i, j]})
+    }
+  }
+  return tiles;
+}
+
+// const startTiles = [
+//     {gridPosition: [8,7]},
+//     {gridPosition: [9,8]},
+//     {gridPosition: [8,9]},
+//     {gridPosition: [7,8]}
+//   ]
 
 const Board = () => {
   const draggableNodeRef = useRef(null);
@@ -29,29 +35,7 @@ const Board = () => {
 
   const [room] = useDocumentData(gamesRef.doc(gameState.roomId));
 
-
-
-  const { tilesState, tilesDispatch } = useTiles();
-  
-  useEffect(() => {
-    // tilesDispatch({type: "initTile", value: tile1a as TileInterface})
-    // (async() => {
-    //   const initTile = {
-    //     ...tile1a,
-    //     gridPosition: [8, 8]
-    //   }
-    //   await setDoc(
-    //     gamesRef.doc(gameState.roomId), 
-    //     {tiles: [initTile], pawns: pawnsInitialState},
-    //     {merge: true}
-    //   )
-    // })()
-  }, [room])
-
-  const { pawnState, pawnDispatch } = usePawn();
-  const { yellow, green, purple, orange } = pawnState;
-
-  const [availableArea, setAvailableArea] = useState<TileInterface[]>(startTiles as TileInterface[]);
+  const [availableArea, setAvailableArea] = useState<TileInterface[]>(startTiles() as TileInterface[]);
 
   const getExplorationTile = (pawn: HeroPawn, pawnColIndex: number, pawnRowIndex: number) => {
     const currentTile = room.tiles.find((tile: any) => tile.gridPosition[0] === pawn.gridPosition[0] && tile.gridPosition[1] === pawn.gridPosition[1])
@@ -84,7 +68,6 @@ const Board = () => {
     }
   }
 
-
   const highlightNewTileArea = () => {
     const placeholderTiles = [...availableArea];
 
@@ -95,10 +78,7 @@ const Board = () => {
     // MIGHT NEED TO RETURN MORE NEW AREAS
     highlightAreas.forEach(newArea => {
       const tileIndex = placeholderTiles.findIndex(tile => tile.gridPosition[0] === newArea.gridPosition[0] && tile.gridPosition[1] === newArea.gridPosition[1]);
-      if (tileIndex === -1) {
-        placeholderTiles.push(newArea)
-      }
-      else {
+      if (tileIndex >= 0) {
         placeholderTiles[tileIndex] = newArea
       }
     })
@@ -106,43 +86,31 @@ const Board = () => {
     setAvailableArea(placeholderTiles);
   }
 
-  const clearHighlightAreas = (gridPosition: number[]) => {
+  const clearHighlightAreas = useCallback((gridPosition: number[]) => {
     const remainingAvailable = availableArea.filter(area => area.gridPosition[0] !== gridPosition[0] || area.gridPosition[1] !== gridPosition[1]);
     
     const resetAreas = remainingAvailable.map(area => {
       return {gridPosition: area.gridPosition}
     })
 
-    if (gridPosition[0] === 8) {
-      if (gridPosition[1] < 8) {
-        resetAreas.push({gridPosition: [gridPosition[0], gridPosition[1] - 1]} as TileInterface) 
-      }
-      else if (gridPosition[1] > 8) {
-        resetAreas.push({gridPosition: [gridPosition[0], gridPosition[1] + 1]} as TileInterface) 
-      }
-    }
-    else if (gridPosition[1] === 8) {
-      if (gridPosition[0] < 8) {
-        resetAreas.push({gridPosition: [gridPosition[0] - 1, gridPosition[1]]} as TileInterface) 
-      }
-      else if (gridPosition[0] > 8) {
-        resetAreas.push({gridPosition: [gridPosition[0] + 1, gridPosition[1]]} as TileInterface) 
-      }
-    }
-
     setAvailableArea(resetAreas as TileInterface[]);
-  }
+  }, [availableArea])
 
   return (
     <div className="Board">
+      {/* {console.log("rendering board")} */}
       <Draggable
         nodeRef={draggableNodeRef}
         defaultPosition={{x: 0, y: 0}}
         >
         <div ref={draggableNodeRef} className="playable-area">
-          {availableArea.length > 0 && availableArea.map((newTileArea, i) => {
+          {availableArea.length > 0 && availableArea.map(newTileArea => {
             return (
-              <NewTileArea key={i} tile={newTileArea} clearHighlightAreas={clearHighlightAreas} />
+              <NewTileArea 
+                key={`${newTileArea.gridPosition[0]}-${newTileArea.gridPosition[1]}`} 
+                tile={newTileArea} 
+                clearHighlightAreas={clearHighlightAreas} 
+                />
             )
           })}
           {room?.tiles?.length > 0 && room?.tiles?.map((newTile: any, tileIndex: number) => {

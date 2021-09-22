@@ -1,7 +1,6 @@
-import React, { MouseEvent, Dispatch, SetStateAction, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useGame } from '../Contexts/GameContext';
 import { usePlayer } from '../Contexts/PlayerContext';
-import { collection, getDoc, query, where, setDoc, doc, DocumentReference, DocumentData } from "firebase/firestore"; 
 import { firestore } from "../Firestore";
 import { useDocumentData } from 'react-firebase-hooks/firestore'
 
@@ -12,23 +11,11 @@ interface PlayerAreaProps {
 const PlayerArea = ({highlightNewTileArea} : PlayerAreaProps) => {
   const { gameState, gameDispatch } = useGame();
   const { playerState, playerDispatch } = usePlayer();
-  // const [ playerActions, setPlayerActions] = useState();
 
   const gamesRef = firestore.collection('games')
 
   const [room] = useDocumentData(gamesRef.doc(gameState.roomId));
 
-  // useEffect(() => {
-  //   const currentPlayer = room?.players?.find((player: any) => player.number === playerState.number);
-  //   console.log("room", room, currentPlayer)
-  //   if (currentPlayer) {
-  //     playerDispatch({type: "setPlayer", value: currentPlayer});
-  //   }
-  // }, [room])
-
-  useEffect(() => {
-    console.log(room);
-  }, [room])
 
   return (
     <div className="player-area">
@@ -52,6 +39,7 @@ const PlayerArea = ({highlightNewTileArea} : PlayerAreaProps) => {
                 }
               })
             }
+            {console.log("rendering player area")}
           </>
             :
           <>

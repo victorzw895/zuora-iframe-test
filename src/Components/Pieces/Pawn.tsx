@@ -1,74 +1,220 @@
-import React, { useEffect, useState, MouseEvent } from 'react';
-import { heroName, heroColor, heroWeapon, HeroPawn, TileInterface, direction, Space as SpaceType } from '../../types';
+import React, { MouseEvent, useEffect } from 'react';
+import { heroColor, HeroPawn, TileInterface, direction, Space as SpaceType } from '../../types';
 import { tileWallSize, spaceSize } from '../../constants';
-import { usePawn, PawnState, BlockedPositions } from '../../Contexts/PawnContext';
+import { BlockedPositions } from '../../Contexts/PawnContext';
 import { usePlayer } from '../../Contexts/PlayerContext';
 import { useGame } from '../../Contexts/GameContext';
-import { useTiles } from '../../Contexts/TilesContext';
-import { collection, getDoc, query, where, setDoc, doc, DocumentReference, DocumentData } from "firebase/firestore"; 
+import { setDoc } from "firebase/firestore"; 
 import { firestore } from "../../Firestore";
 import { useDocumentData } from 'react-firebase-hooks/firestore'
-
-// const PawnFactory = (color: heroColor, startPosition: number[]) => {
-//   console.log('pawn factory', color, startPosition);
-//   let heroName, weapon;
-//   switch (color) {
-//     case 'yellow':
-//       heroName = 'Barbarian'
-//       weapon = 'sword'
-//       break;
-//     case 'purple':
-//       heroName = 'Mage'
-//       weapon = 'vial'
-//       break;
-//     case 'green':
-//       heroName = 'Elf'
-//       weapon = 'bow'
-//       break;
-//     case 'orange':
-//       heroName = 'Dwarf'
-//       weapon = 'axe'
-//       break;
-//     default:
-//       break;
-//   }
-
-//   return {
-//     heroName: heroName as heroName,
-//     color,
-//     height: 46.25,
-//     width: 46.25,
-//     weapon: weapon as heroWeapon,
-//     playerHeld: null,
-//     position: startPosition,
-//     ability: '',
-//     canUseAbility: false,
-//     move: () => {},
-//     useAbility: () => {},
-//     stealWeapon: () => {},
-//     escape: () => {return false}
-//   }
-// }
 
 
 interface pawnProps {
   color: heroColor,
-  // position: number[]
 }
 
 const Pawn = ({color}: pawnProps) => {
   const { gameState, gameDispatch } = useGame();
   const { playerState, playerDispatch } = usePlayer();
-  const { tilesState, tilesDispatch } = useTiles();
 
   const gamesRef = firestore.collection('games')
 
   const [room] = useDocumentData(gamesRef.doc(gameState.roomId));
 
-  const {pawnState, pawnDispatch} = usePawn();
-  // const [pawn, setPawn] = useState<HeroPawn>(PawnFactory(color, position));
-  const pawn = pawnState[color as keyof PawnState];
+  useEffect(() => {
+    (async() => {
+      if (room && room.pawns && color !== "yellow") {
+        const pawnColor = room.pawns[color];
+        const currentPlayer = room.players.find((player: any) => player.number === playerState.number)
+        if (pawnColor.playerHeld === currentPlayer.number) {
+          const newRoomValue = {...room};
+  
+          const blockedDirections: BlockedPositions = {
+            up: {
+              position: null,
+              gridPosition: null
+            },
+            right: {
+              position: null,
+              gridPosition: null
+            },
+            left: {
+              position: null,
+              gridPosition: null
+            },
+            down: {
+              position: null,
+              gridPosition: null
+            },
+          }
+  
+          currentPlayer.playerDirections.forEach((direction: direction) => {
+            const blockedSpace = getFirstBlockedSpace(pawnColor, direction);
+            blockedDirections[direction].position = blockedSpace.position
+            blockedDirections[direction].gridPosition = blockedSpace.gridPosition
+          })
+  
+          newRoomValue.pawns[color].blockedPositions = blockedDirections;
+  
+          await setDoc(
+            gamesRef.doc(gameState.roomId), 
+            { 
+              pawns: newRoomValue.pawns
+            },
+            {merge: true}
+          )
+          playerDispatch({type: "showMovableSpaces", value: currentPlayer.playerDirections, color})
+        }
+      }
+    })()
+  }, [room?.pawns.yellow.position[0], room?.pawns.yellow.position[1]])
 
+  useEffect(() => {
+    (async() => {
+      if (room && room.pawns && color !== "orange") {
+        const pawnColor = room.pawns[color];
+        const currentPlayer = room.players.find((player: any) => player.number === playerState.number)
+        if (pawnColor.playerHeld === currentPlayer.number) {
+          const newRoomValue = {...room};
+  
+          const blockedDirections: BlockedPositions = {
+            up: {
+              position: null,
+              gridPosition: null
+            },
+            right: {
+              position: null,
+              gridPosition: null
+            },
+            left: {
+              position: null,
+              gridPosition: null
+            },
+            down: {
+              position: null,
+              gridPosition: null
+            },
+          }
+  
+          currentPlayer.playerDirections.forEach((direction: direction) => {
+            const blockedSpace = getFirstBlockedSpace(pawnColor, direction);
+            blockedDirections[direction].position = blockedSpace.position
+            blockedDirections[direction].gridPosition = blockedSpace.gridPosition
+          })
+  
+          newRoomValue.pawns[color].blockedPositions = blockedDirections;
+  
+          await setDoc(
+            gamesRef.doc(gameState.roomId), 
+            { 
+              pawns: newRoomValue.pawns
+            },
+            {merge: true}
+          )
+          playerDispatch({type: "showMovableSpaces", value: currentPlayer.playerDirections, color})
+        }
+      }
+    })()
+  }, [room?.pawns.orange.position[0], room?.pawns.orange.position[1]])
+
+  useEffect(() => {
+    (async() => {
+      if (room && room.pawns && color !== "purple") {
+        const pawnColor = room.pawns[color];
+        const currentPlayer = room.players.find((player: any) => player.number === playerState.number)
+        if (pawnColor.playerHeld === currentPlayer.number) {
+          const newRoomValue = {...room};
+  
+          const blockedDirections: BlockedPositions = {
+            up: {
+              position: null,
+              gridPosition: null
+            },
+            right: {
+              position: null,
+              gridPosition: null
+            },
+            left: {
+              position: null,
+              gridPosition: null
+            },
+            down: {
+              position: null,
+              gridPosition: null
+            },
+          }
+  
+          currentPlayer.playerDirections.forEach((direction: direction) => {
+            const blockedSpace = getFirstBlockedSpace(pawnColor, direction);
+            blockedDirections[direction].position = blockedSpace.position
+            blockedDirections[direction].gridPosition = blockedSpace.gridPosition
+          })
+  
+          newRoomValue.pawns[color].blockedPositions = blockedDirections;
+  
+          await setDoc(
+            gamesRef.doc(gameState.roomId), 
+            { 
+              pawns: newRoomValue.pawns
+            },
+            {merge: true}
+          )
+          playerDispatch({type: "showMovableSpaces", value: currentPlayer.playerDirections, color})
+        }
+      }
+    })()
+  }, [room?.pawns.purple.position[0], room?.pawns.purple.position[1]])
+
+  useEffect(() => {
+    (async() => {
+      if (room && room.pawns && color !== "green") {
+        const pawnColor = room.pawns[color];
+        const currentPlayer = room.players.find((player: any) => player.number === playerState.number)
+        if (pawnColor.playerHeld === currentPlayer.number) {
+          const newRoomValue = {...room};
+  
+          const blockedDirections: BlockedPositions = {
+            up: {
+              position: null,
+              gridPosition: null
+            },
+            right: {
+              position: null,
+              gridPosition: null
+            },
+            left: {
+              position: null,
+              gridPosition: null
+            },
+            down: {
+              position: null,
+              gridPosition: null
+            },
+          }
+  
+          currentPlayer.playerDirections.forEach((direction: direction) => {
+            const blockedSpace = getFirstBlockedSpace(pawnColor, direction);
+            blockedDirections[direction].position = blockedSpace.position
+            blockedDirections[direction].gridPosition = blockedSpace.gridPosition
+          })
+  
+          newRoomValue.pawns[color].blockedPositions = blockedDirections;
+  
+          await setDoc(
+            gamesRef.doc(gameState.roomId), 
+            { 
+              pawns: newRoomValue.pawns
+            },
+            {merge: true}
+          )
+          playerDispatch({type: "showMovableSpaces", value: currentPlayer.playerDirections, color})
+        }
+      }
+    })()
+  }, [room?.pawns.green.position[0], room?.pawns.green.position[1]])
+
+  // const {pawnState, pawnDispatch} = usePawn();
+  // const pawn = pawnState[color as keyof PawnState];
   
   const directionPositionValue = {
     "up": -1,
@@ -277,11 +423,10 @@ const Pawn = ({color}: pawnProps) => {
     return firstBlocked;
   }
 
-  const _handleClick = async (e: MouseEvent<HTMLDivElement>) => {
+  const toggleMovableSpaces = async () => {
     const pawnColor = room.pawns[color];
     const newRoomValue = {...room}
     const pawnPosition = pawnColor.position;
-    console.log("newRoomValue", newRoomValue);
     const currentPlayer = newRoomValue.players.find((player: any) => player.number === playerState.number)
     const playerDirections = currentPlayer.playerDirections;
 
@@ -307,6 +452,13 @@ const Pawn = ({color}: pawnProps) => {
     if (!pawnColor.playerHeld) {
       const newRoomValue = {...room};
 
+      Object.values(newRoomValue.pawns).forEach((pawn: any) => {
+        if (pawn.playerHeld === currentPlayer.number) {
+          pawn.playerHeld = null;
+          playerDispatch({type: "showMovableSpaces", value: [], color: pawn.color})
+        }
+      })
+
       newRoomValue.pawns[color].playerHeld = currentPlayer.number;
 
       // get pawn position
@@ -319,6 +471,7 @@ const Pawn = ({color}: pawnProps) => {
       })
 
       newRoomValue.pawns[color].blockedPositions = blockedDirections;
+      console.log("blockedDirections", blockedDirections, currentPlayer);
 
       await setDoc(
         gamesRef.doc(gameState.roomId), 
@@ -327,26 +480,11 @@ const Pawn = ({color}: pawnProps) => {
         },
         {merge: true}
       )
-      console.log("playerDirections", playerDirections)
-      // pawnDispatch({type: "addBlockedPositions", value: blockedDirections, color: "yellow"})
-      // setShowMovableDirections(playerDirections);
       playerDispatch({type: "showMovableSpaces", value: playerDirections, color})
-
-      // playerDispatch({type: "showMovableSpaces", value: playerDirections, color})
-  
-      // await setDoc(
-      //   gamesRef.doc(gameState.roomId), 
-      //   { 
-      //     pawns: newRoomValue.pawns
-      //   },
-      //   {merge: true}
-      // )
     }
-    else {
-      // pawnDispatch({type: "playerHeld", value: 1, color})
+    else if (pawnColor.playerHeld && pawnColor.playerHeld === currentPlayer.number) {
       newRoomValue.pawns[color].playerHeld = null;
-
-      newRoomValue.pawns[color].blockedPositions = blockedDirections;
+      // newRoomValue.pawns[color].blockedPositions = blockedDirections;
   
       await setDoc(
         gamesRef.doc(gameState.roomId), 
@@ -357,8 +495,11 @@ const Pawn = ({color}: pawnProps) => {
       )
 
       playerDispatch({type: "showMovableSpaces", value: [], color})
-
     }
+  }
+
+  const _handleClick = async (e: MouseEvent<HTMLDivElement>) => {
+    toggleMovableSpaces();
   }
 
   const getDisplacementValue = (positionValue: number) => {
@@ -379,10 +520,11 @@ const Pawn = ({color}: pawnProps) => {
             placeSelf: "center",
             position: "static"
           }}>
-          <div className={`pawn ${color}`} onClick={_handleClick}
+            {/* {console.log('rendering pawn')} */}
+          <div 
+            className={`pawn ${color}`} 
+            onClick={_handleClick}
             style={{
-              // left: `${(pawn.position[0] * pawn.width) + tileWallSize + ((8 - pawn.gridPosition[1]) * pawn.width)}px`,
-              // top: `${(pawn.position[1] * pawn.height) + tileWallSize + ((pawn.gridPosition[0] - 8) * pawn.height)}px`,
               gridColumnStart: room?.pawns[color]?.position[0] + 1,
               gridRowStart: room?.pawns[color]?.position[1] + 1,
               position: "relative"
@@ -392,7 +534,15 @@ const Pawn = ({color}: pawnProps) => {
               draggable={false}
               src={`/${color}-pawn.svg`} 
               alt={`${color}-piece`} 
-              style={{border: `${room?.pawns[color]?.playerHeld ? "2px solid blue" : ""}`}}/>
+              style={{
+                border: `${room?.pawns[color]?.playerHeld ? 
+                            (room?.pawns[color]?.playerHeld === playerState.number ?
+                              "2px solid blue" 
+                                : 
+                              "2px solid grey")
+                            :
+                            ""}`
+                }}/>
           </div>
         </div>
           :

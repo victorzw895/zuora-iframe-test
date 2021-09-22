@@ -1,11 +1,11 @@
-import React, { useState, ChangeEvent, useEffect } from 'react';
+import React, { useState, ChangeEvent } from 'react';
 import cryptoRandomString from 'crypto-random-string';
 import { useGame, PlayerFactory, assignRandomActions } from '../Contexts/GameContext';
 import { usePlayer } from '../Contexts/PlayerContext';
-import { usePawn, pawnsInitialState } from '../Contexts/PawnContext';
-import { Game, playerNumber } from '../types';
-import { Stack, Button, TextField, List, ListItem, Paper, Alert } from '@mui/material';
-import { collection, getDoc, query, where, setDoc, doc, DocumentReference, DocumentData } from "firebase/firestore"; 
+import { pawnsInitialState } from '../Contexts/PawnContext';
+import { Stack, Button, TextField, List, ListItem, Paper } from '@mui/material';
+import { Player } from '../types';
+import { getDoc, setDoc } from "firebase/firestore"; 
 import { firestore } from "../Firestore";
 import { useDocumentData } from 'react-firebase-hooks/firestore'
 import { tile1a } from '../Data/tile1a';
@@ -32,7 +32,7 @@ const Lobby = ({}: LobbyProps) => {
     const newGameCode = cryptoRandomString({length: 5, type: 'distinguishable'});
     setIsHost(true);
     gameDispatch({type: "joinRoom", value: newGameCode, playerName});
-    const newPlayer = PlayerFactory(playerName, 0)
+    const newPlayer: Player = PlayerFactory(playerName, 0)
     playerDispatch({type: "setPlayer", value: newPlayer});
     await setDoc(gamesRef.doc(newGameCode), {
       players: [newPlayer],
@@ -61,6 +61,11 @@ const Lobby = ({}: LobbyProps) => {
       },
       {merge: true}
     )
+
+    const currentPlayer = players.find(player => player.number === playerState.number);
+    if (currentPlayer) {
+      playerDispatch({type: "setPlayer", value: currentPlayer});
+    }
   }
 
   const _handleRoomCode = (e: ChangeEvent<HTMLInputElement>) => {
