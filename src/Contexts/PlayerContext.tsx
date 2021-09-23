@@ -1,12 +1,28 @@
 import React, { createContext, useContext, useReducer } from 'react';
-import { HeroPawn, heroName, heroWeapon, heroColor, Player, playerNumber, direction } from '../types';
+import { HeroPawn, heroName, heroWeapon, heroColor, Player, playerNumber, direction, Escalator } from '../types';
 
 type Action = {type: 'playerHeld', value: number | null, color: heroColor} | 
-              {type: 'showMovableSpaces', value: direction[], color: heroColor} | 
+              {type: 'showMovableSpaces', value: direction[]} | 
+              {type: 'showEscalatorSpaces', value: Escalator[]} | 
+              {type: 'showTeleportSpaces', color: heroColor | null} | 
               {type: 'setPlayer', value: Player} | undefined;
 type Dispatch = (action: Action) => void;
 
 type PlayerProviderProps = {children: React.ReactNode}
+
+export const PlayerFactory = (playerName: string, currentPlayers: number) => {
+  return {
+    name: playerName,
+    number: currentPlayers + 1 as playerNumber,
+    playerDirections: [],
+    showMovableDirections: [],
+    showTeleportSpaces: null,
+    showEscalatorSpaces: [],
+    playerPawnHeld: null,
+    playerAbilities: [],
+    pingPlayer: null,
+  }
+}
 
 // assign random number
 
@@ -17,6 +33,8 @@ const playerInitialState: Player = {
   showMovableDirections: [],
   playerPawnHeld: null,
   playerAbilities: [],
+  showTeleportSpaces: null,
+  showEscalatorSpaces: []
   // placeTile: () => void,
   // pingPlayer: (number: playerNumber) => {},
 }
@@ -32,6 +50,14 @@ const playerReducer = (playerState: Player, action: any) => {
     }
     case 'showMovableSpaces': {
       newState.showMovableDirections = action.value;
+      return newState;
+    }
+    case 'showTeleportSpaces': {
+      newState.showTeleportSpaces = action.color;
+      return newState;
+    }
+    case 'showEscalatorSpaces': {
+      newState.showEscalatorSpaces = action.value;
       return newState;
     }
     case 'setPlayer': {

@@ -17,8 +17,18 @@ export interface SandTimer {
 
 export interface Game {
   roomId: string,
+  timerRunning: boolean
+  minutesLeft: number,
+  secondsLeft: number,
+  gameOver: boolean
   // players: Player[],
   // gameStarted: boolean
+}
+
+export interface Escalator {
+  position: number[] | null,
+  gridPosition: number[] | null,
+  escalatorName: string | null
 }
 
 export interface Player {
@@ -28,6 +38,8 @@ export interface Player {
   showMovableDirections: direction[],
   playerPawnHeld: heroColor | null,
   playerAbilities: basicAbility[],
+  showTeleportSpaces: heroColor | null,
+  showEscalatorSpaces: Escalator[]
   // placeTile: () => void,
   // pingPlayer: ((number: playerNumber) => void) | null,
 }
@@ -87,21 +99,22 @@ interface SpaceDetails {
   isOccupied?: boolean,
   sideWalls?: direction[],
   hasEscalator?: boolean,
-  useEscalator?: () => void,
+  // useEscalator?: () => void,
+  escalatorName?: string,
   isEntry?: boolean
 }
 
 type SpaceTypeName = "timer" | "teleporter" | "exploration" | "special" | "weapon" | "exit" | "blank" | "barrier"
 
-interface TimerSpace extends SpaceDetails {
+export interface TimerSpace extends SpaceDetails {
   isDisabled: boolean
 }
 
-interface TeleporterSpace extends SpaceDetails {
+export interface TeleporterSpace extends SpaceDetails {
   color: heroColor,
 }
 
-interface ExplorationSpace extends SpaceDetails {
+export interface ExplorationSpace extends SpaceDetails {
   color: heroColor,
   hasLoudspeaker: boolean,
   exploreDirection: direction

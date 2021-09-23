@@ -5,7 +5,6 @@ import { generateTile } from '../Contexts/TilesContext';
 import { useGame } from '../Contexts/GameContext';
 import { setDoc, doc, getDoc } from "firebase/firestore"; 
 import { firestore } from "../Firestore";
-import { useDocumentData } from 'react-firebase-hooks/firestore'
 
 
 interface NewTileAreaProps {
@@ -39,7 +38,6 @@ const NewTileArea = React.memo(({tile, clearHighlightAreas}: NewTileAreaProps) =
   }
 
   const placeNewTile = (e: MouseEvent<HTMLDivElement>) => {
-    console.log("here")
     if (placementDirection) {
       addNewTile({gridPosition, placementDirection} as TileInterface);
     }

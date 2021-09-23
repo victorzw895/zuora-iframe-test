@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, memo, useEffect } from 'react';
 import Space from './Space';
-import { direction, HeroPawn, TileInterface } from '../types';
+import { direction, HeroPawn, TileInterface, heroColor } from '../types';
 import { tileWallSize, spaceSize } from '../constants';
 import { usePawn } from '../Contexts/PawnContext';
 import { useGame } from '../Contexts/GameContext';
 import { usePlayer } from '../Contexts/PlayerContext';
 import { useTiles } from '../Contexts/TilesContext';
-import { firestore } from "../Firestore";
+import { firestore, gamesRef } from "../Firestore";
 import { useDocumentData } from 'react-firebase-hooks/firestore'
 
 
@@ -17,16 +17,47 @@ interface tileProps {
   tileIndex: number
 }
 
-const Tile = ({startTile, id, tileIndex}: tileProps) => {
+const areEqual = (prevProps: tileProps, nextProps: tileProps) => {
+  if (prevProps.id === nextProps.id) {
+    return true
+  } 
+  else if (prevProps.tileIndex === nextProps.tileIndex) {
+    return true
+  }
+  return false
+}
+
+const Tile = memo(({startTile, id, tileIndex}: tileProps) => {
 
   const { playerState, playerDispatch } = usePlayer();
 
   const { gameState, gameDispatch } = useGame();
 
-  const gamesRef = firestore.collection('games')
+  // const gamesRef = firestore.collection('games')
 
   const [room] = useDocumentData(gamesRef.doc(gameState.roomId));
 
+  useEffect(() => {
+    console.log('tile', room)
+  }, [room])
+  useEffect(() => {
+    console.log('tile', 'startTile', startTile)
+  }, [startTile])
+  useEffect(() => {
+    console.log('tile', 'id', id)
+  }, [id])
+  useEffect(() => {
+    console.log('tile', 'tileIndex', tileIndex)
+  }, [tileIndex])
+  useEffect(() => {
+    console.log('tile', 'playerState', playerState)
+  }, [playerState])
+  useEffect(() => {
+    console.log('tile', 'gameState', gameState)
+  }, [gameState])
+  useEffect(() => {
+    console.log('tile', 'gamesRef', gamesRef)
+  }, [gamesRef])
 
   const tileHasBlockedSpace = (tileData: TileInterface, direction: direction, pawnHeld: HeroPawn) => {
     if (playerState?.showMovableDirections?.includes(direction)) {
@@ -72,6 +103,7 @@ const Tile = ({startTile, id, tileIndex}: tileProps) => {
 
             return (
               <div className="row" key={`row${rowIndex}`}>
+                {console.log("re rendering tile ******")}
                 {row.map((space: any, colIndex: number) => {
                   const player = room.players.find((player: any) => player.number === playerState.number)
                   if (colorHeld && colorHeld.playerHeld === player.number && playerState?.showMovableDirections?.length) {
@@ -251,6 +283,9 @@ const Tile = ({startTile, id, tileIndex}: tileProps) => {
                       colorSelected={colorHeld ? colorHeld.color : null}
                       spacePosition={[colIndex, rowIndex]} 
                       gridPosition={[...room.tiles[tileIndex].gridPosition]}
+                      highlightTeleporter={playerState.showTeleportSpaces}
+                      highlightEscalator={playerState.showEscalatorSpaces}
+                      tileIndex={tileIndex}
                     />
                   )
                 })}
@@ -272,6 +307,6 @@ const Tile = ({startTile, id, tileIndex}: tileProps) => {
       }
     </>
   )
-}
+}, areEqual)
 
 export default Tile;

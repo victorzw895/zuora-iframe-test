@@ -21,7 +21,12 @@ function App() {
     if (gameState.roomId) {
       setGameDoc(gamesRef.doc(gameState.roomId))
     }
+    // console.log("App")
   }, [gameState.roomId])
+
+  // useEffect(() => {
+  //   console.log("rendering app")
+  // })
 
   return (
     <div className="MMApp">

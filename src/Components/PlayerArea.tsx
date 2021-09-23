@@ -16,6 +16,9 @@ const PlayerArea = ({highlightNewTileArea} : PlayerAreaProps) => {
 
   const [room] = useDocumentData(gamesRef.doc(gameState.roomId));
 
+  const _handleContinueGame = () => {
+    gameDispatch({type: "toggleTimer", value: !gameState.timerRunning})
+  }
 
   return (
     <div className="player-area">
@@ -39,7 +42,23 @@ const PlayerArea = ({highlightNewTileArea} : PlayerAreaProps) => {
                 }
               })
             }
-            {console.log("rendering player area")}
+            {
+              (!gameState.timerRunning) &&
+              <div className="game-paused">
+                <p>Timer has been hit! Time left remaining:
+                  <span>{gameState.minutesLeft}</span>:
+                  <span>{gameState.secondsLeft.toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping: false})}</span>
+                </p>
+                <button onClick={_handleContinueGame}>Continue</button>
+              </div>
+            }
+            {
+               gameState.gameOver && 
+               <div className="game-paused">
+                <p>Game Over</p>
+              </div>
+            }
+            {/* {console.log("rendering player area")} */}
           </>
             :
           <>

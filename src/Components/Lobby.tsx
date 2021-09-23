@@ -1,14 +1,15 @@
-import React, { useState, ChangeEvent } from 'react';
+import React, { useState, ChangeEvent, useEffect } from 'react';
 import cryptoRandomString from 'crypto-random-string';
-import { useGame, PlayerFactory, assignRandomActions } from '../Contexts/GameContext';
-import { usePlayer } from '../Contexts/PlayerContext';
+import { useGame, assignRandomActions } from '../Contexts/GameContext';
+import { usePlayer, PlayerFactory } from '../Contexts/PlayerContext';
 import { pawnsInitialState } from '../Contexts/PawnContext';
 import { Stack, Button, TextField, List, ListItem, Paper } from '@mui/material';
 import { Player } from '../types';
 import { getDoc, setDoc } from "firebase/firestore"; 
 import { firestore } from "../Firestore";
 import { useDocumentData } from 'react-firebase-hooks/firestore'
-import { tile1a } from '../Data/tile1a';
+// import { tile1a } from '../Data/tile1a';
+import { allTiles } from '../Data/all-tiles-data';
 
 interface LobbyProps {
 }
@@ -28,6 +29,10 @@ const Lobby = ({}: LobbyProps) => {
 
   const [room] = useDocumentData(gameDoc);
 
+  // Generate code ->
+  // save room code (local) -> 
+  // save player number/name (local) -> 
+  // create new Document, save player (DB)
   const createNewGame = async () => {
     const newGameCode = cryptoRandomString({length: 5, type: 'distinguishable'});
     setIsHost(true);
@@ -42,13 +47,23 @@ const Lobby = ({}: LobbyProps) => {
     setGameDoc(gamesRef.doc(newGameCode))
   }
 
+  // Assign actions to existing players ->
+  // set initial tile ->
+  // set pawn positions ->
+  // save players, gameStarted, tiles, pawns (DB)
+  // update player with actions (local)
   const startGame = async () => {
+    // set player actions
     const players = assignRandomActions(room.players)
+    const currentPlayer = players.find(player => player.number === playerState.number);
+    if (currentPlayer) {
+      playerDispatch({type: "setPlayer", value: currentPlayer});
+    }
     // setInitialTile
     // setPawnPositions
-
+    const firstTile = allTiles.find(tile => tile.id === "1a");
     const initTile = {
-      ...tile1a,
+      ...firstTile,
       gridPosition: [8, 8]
     }
     await setDoc(
@@ -61,11 +76,7 @@ const Lobby = ({}: LobbyProps) => {
       },
       {merge: true}
     )
-
-    const currentPlayer = players.find(player => player.number === playerState.number);
-    if (currentPlayer) {
-      playerDispatch({type: "setPlayer", value: currentPlayer});
-    }
+    gameDispatch({type: "startGame"})
   }
 
   const _handleRoomCode = (e: ChangeEvent<HTMLInputElement>) => {
@@ -76,7 +87,16 @@ const Lobby = ({}: LobbyProps) => {
     setPlayerName(e.target.value)
   }
 
+  // check room code typed
+  // if document with room code exists
+  // save to local room state (live)
+  // if room found & not started & players < 8
+  // create factory new player
+  // save room code (local)
+  // save player number/name (local)
+  // save players + newPlayer (DB)
   const joinRoom = async () => {
+    if (!existingRoomCode) return
     const gamesDocRef = gamesRef.doc(existingRoomCode)
     const docSnap = await getDoc(gamesDocRef);
 
@@ -85,6 +105,9 @@ const Lobby = ({}: LobbyProps) => {
     if (docSnap.exists()) {
       roomFound = docSnap.data();
       setGameDoc(gamesDocRef)
+    }
+    else {
+      return
     }
 
     // if found

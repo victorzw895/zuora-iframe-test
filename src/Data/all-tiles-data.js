@@ -116,6 +116,7 @@ export const allTiles = [
             "left"
           ],
           "hasEscalator": true,
+          "escalatorName": "a",
           "color": "green",
           "exploreDirection": "right",
           "specialAbility": "weCanTalkAgain",
@@ -150,7 +151,8 @@ export const allTiles = [
             "down",
             "right"
           ],
-          "hasEscalator": true
+          "hasEscalator": true,
+          "escalatorName": "a"
         }
       },
       {

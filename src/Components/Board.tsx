@@ -7,8 +7,10 @@ import { TileInterface, HeroPawn } from '../types';
 import './Board.scss';
 import { useGame } from '../Contexts/GameContext';
 import Draggable from 'react-draggable';
-import { firestore } from "../Firestore";
-import { useDocumentData } from 'react-firebase-hooks/firestore'
+import { firestore, gamesRef } from "../Firestore";
+import { useDocumentData, useDocumentDataOnce } from 'react-firebase-hooks/firestore'
+import { collection, query, where } from "firebase/firestore";
+import Timer from './Timer';
 
 const startTiles = () => {
   const tiles = []
@@ -20,47 +22,57 @@ const startTiles = () => {
   return tiles;
 }
 
-// const startTiles = [
-//     {gridPosition: [8,7]},
-//     {gridPosition: [9,8]},
-//     {gridPosition: [8,9]},
-//     {gridPosition: [7,8]}
-//   ]
+const time = new Date();
 
 const Board = () => {
   const draggableNodeRef = useRef(null);
   const { gameState, gameDispatch } = useGame();
 
-  const gamesRef = firestore.collection('games')
-
   const [room] = useDocumentData(gamesRef.doc(gameState.roomId));
+
+  const { pawns, tiles } = room || {}
 
   const [availableArea, setAvailableArea] = useState<TileInterface[]>(startTiles() as TileInterface[]);
 
+  useEffect(() => {
+    console.log("---------- BOARD --------")
+    console.log('room', room)
+  }, [room])
+
+  useEffect(() => {
+    console.log("Board.tsx")
+  })
+
+  useEffect(() => {
+    // IDEALLY on game start
+    // maybe move timer to firestore ???
+    time.setSeconds(time.getSeconds() + 200);
+  }, [])
+
   const getExplorationTile = (pawn: HeroPawn, pawnColIndex: number, pawnRowIndex: number) => {
-    const currentTile = room.tiles.find((tile: any) => tile.gridPosition[0] === pawn.gridPosition[0] && tile.gridPosition[1] === pawn.gridPosition[1])
+    const currentTile = tiles.find((tile: any) => tile.gridPosition[0] === pawn.gridPosition[0] && tile.gridPosition[1] === pawn.gridPosition[1])
     if (currentTile) {
       const pawnRow = Object.values(currentTile.spaces!).filter((row: any, rowIndex: number) => rowIndex === pawnRowIndex).flat(1)
       const pawnSpace = pawnRow.find((col: any, colIndex: number) => colIndex === pawnColIndex)
       const spaceDetails = (pawnSpace as any).details as any
       if (pawnSpace && (pawnSpace as any).type === "exploration" && spaceDetails.color === pawn.color) {
         if (spaceDetails.exploreDirection === "up") {
-          const tileExists = room.tiles.find((tile: any) => tile.gridPosition[0] === currentTile.gridPosition[0] && tile.gridPosition[1] === currentTile.gridPosition[1] - 1)
+          const tileExists = tiles.find((tile: any) => tile.gridPosition[0] === currentTile.gridPosition[0] && tile.gridPosition[1] === currentTile.gridPosition[1] - 1)
           if (tileExists) return
           return {gridPosition: [currentTile.gridPosition[0], currentTile.gridPosition[1] - 1], placementDirection: spaceDetails.exploreDirection}
         }
         if (spaceDetails.exploreDirection === "down") {
-          const tileExists = room.tiles.find((tile: any) => tile.gridPosition[0] === currentTile.gridPosition[0] && tile.gridPosition[1] === currentTile.gridPosition[1] + 1)
+          const tileExists = tiles.find((tile: any) => tile.gridPosition[0] === currentTile.gridPosition[0] && tile.gridPosition[1] === currentTile.gridPosition[1] + 1)
           if (tileExists) return
           return {gridPosition: [currentTile.gridPosition[0], currentTile.gridPosition[1] + 1], placementDirection: spaceDetails.exploreDirection}
         }
         if (spaceDetails.exploreDirection === "left") {
-          const tileExists = room.tiles.find((tile: any) => tile.gridPosition[0] === currentTile.gridPosition[0] - 1 && tile.gridPosition[1] === currentTile.gridPosition[1])
+          const tileExists = tiles.find((tile: any) => tile.gridPosition[0] === currentTile.gridPosition[0] - 1 && tile.gridPosition[1] === currentTile.gridPosition[1])
           if (tileExists) return
           return {gridPosition: [currentTile.gridPosition[0] - 1, currentTile.gridPosition[1]], placementDirection: spaceDetails.exploreDirection}
         }
         if (spaceDetails.exploreDirection === "right") {
-          const tileExists = room.tiles.find((tile: any) => tile.gridPosition[0] === currentTile.gridPosition[0] + 1 && tile.gridPosition[1] === currentTile.gridPosition[1])
+          const tileExists = tiles.find((tile: any) => tile.gridPosition[0] === currentTile.gridPosition[0] + 1 && tile.gridPosition[1] === currentTile.gridPosition[1])
           if (tileExists) return
           return {gridPosition: [currentTile.gridPosition[0] + 1, currentTile.gridPosition[1]], placementDirection: spaceDetails.exploreDirection}
         }
@@ -71,11 +83,11 @@ const Board = () => {
   const highlightNewTileArea = () => {
     const placeholderTiles = [...availableArea];
 
-    const highlightAreas = Object.values(room.pawns).map((pawn: any) => {
+    const highlightAreas = Object.values(pawns).map((pawn: any) => {
       return getExplorationTile(pawn, pawn.position[0], pawn.position[1]) 
     }).filter(gridPos => gridPos) as TileInterface[]
 
-    // MIGHT NEED TO RETURN MORE NEW AREAS
+    // adding placementDirection value to tiles that need to be highlighted
     highlightAreas.forEach(newArea => {
       const tileIndex = placeholderTiles.findIndex(tile => tile.gridPosition[0] === newArea.gridPosition[0] && tile.gridPosition[1] === newArea.gridPosition[1]);
       if (tileIndex >= 0) {
@@ -98,7 +110,7 @@ const Board = () => {
 
   return (
     <div className="Board">
-      {/* {console.log("rendering board")} */}
+      <Timer expiryTimestamp={time} />
       <Draggable
         nodeRef={draggableNodeRef}
         defaultPosition={{x: 0, y: 0}}
@@ -113,7 +125,7 @@ const Board = () => {
                 />
             )
           })}
-          {room?.tiles?.length > 0 && room?.tiles?.map((newTile: any, tileIndex: number) => {
+          {tiles && tiles.length > 0 && tiles.map((newTile: any, tileIndex: number) => {
             return (
               <Tile key={tileIndex} tileIndex={tileIndex}/>
             )

@@ -14,40 +14,6 @@ const tilesInitialState: TileInterface[] = []
 
 const TilesContext = createContext<{tilesState: TileInterface[]; tilesDispatch: Dispatch} | undefined>(undefined);
 
-// export const convertToFS = (tile: TileInterface) => {
-//   const tileSpaces = [...tile.spaces!];
-//   const convertedSpaces = {
-//     0: tileSpaces[0],
-//     1: tileSpaces[1],
-//     2: tileSpaces[2],
-//     3: tileSpaces[3]
-//   }
-
-//   const convertedTile = {
-//     id: tile.id,
-//     spaces: convertedSpaces
-//   }
-
-//   return convertedTile
-// }
-
-// export const convertFromFS = (tile: any) => {
-//   const tileSpaces = tile.spaces;
-//   const convertedSpaces = [
-//     tileSpaces[0],
-//     tileSpaces[1],
-//     tileSpaces[2],
-//     tileSpaces[3]
-//   ]
-
-//   const convertedTile = {
-//     id: tile.id,
-//     spaces: convertedSpaces
-//   }
-
-//   return convertedTile
-// }
-
 type directionValuesType = {
   up: number,
   right: number,

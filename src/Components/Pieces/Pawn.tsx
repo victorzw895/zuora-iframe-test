@@ -1,11 +1,11 @@
 import React, { MouseEvent, useEffect } from 'react';
-import { heroColor, HeroPawn, TileInterface, direction, Space as SpaceType } from '../../types';
+import { heroColor, HeroPawn, TileInterface, direction, Space as SpaceType, Escalator } from '../../types';
 import { tileWallSize, spaceSize } from '../../constants';
 import { BlockedPositions } from '../../Contexts/PawnContext';
 import { usePlayer } from '../../Contexts/PlayerContext';
 import { useGame } from '../../Contexts/GameContext';
 import { setDoc } from "firebase/firestore"; 
-import { firestore } from "../../Firestore";
+import { firestore, gamesRef } from "../../Firestore";
 import { useDocumentData } from 'react-firebase-hooks/firestore'
 
 
@@ -17,16 +17,17 @@ const Pawn = ({color}: pawnProps) => {
   const { gameState, gameDispatch } = useGame();
   const { playerState, playerDispatch } = usePlayer();
 
-  const gamesRef = firestore.collection('games')
-
   const [room] = useDocumentData(gamesRef.doc(gameState.roomId));
 
+  const { pawns, players } = room || {}
+
+  // Recalculate blocked position and showMovable when other player moves pawns
   useEffect(() => {
     (async() => {
-      if (room && room.pawns && color !== "yellow") {
-        const pawnColor = room.pawns[color];
-        const currentPlayer = room.players.find((player: any) => player.number === playerState.number)
-        if (pawnColor.playerHeld === currentPlayer.number) {
+      if (room && pawns) {
+        const currentPlayer = players.find((player: any) => player.number === playerState.number)
+        const playerHeldPawn: any = Object.values(pawns).find((pawn: any) => pawn.playerHeld === currentPlayer.number)
+        if (playerHeldPawn) {
           const newRoomValue = {...room};
   
           const blockedDirections: BlockedPositions = {
@@ -49,13 +50,14 @@ const Pawn = ({color}: pawnProps) => {
           }
   
           currentPlayer.playerDirections.forEach((direction: direction) => {
-            const blockedSpace = getFirstBlockedSpace(pawnColor, direction);
+            const blockedSpace = getFirstBlockedSpace(playerHeldPawn, direction);
             blockedDirections[direction].position = blockedSpace.position
             blockedDirections[direction].gridPosition = blockedSpace.gridPosition
           })
   
-          newRoomValue.pawns[color].blockedPositions = blockedDirections;
+          newRoomValue.pawns[playerHeldPawn.color].blockedPositions = blockedDirections;
   
+          playerDispatch({type: "showMovableSpaces", value: currentPlayer.playerDirections})
           await setDoc(
             gamesRef.doc(gameState.roomId), 
             { 
@@ -63,158 +65,10 @@ const Pawn = ({color}: pawnProps) => {
             },
             {merge: true}
           )
-          playerDispatch({type: "showMovableSpaces", value: currentPlayer.playerDirections, color})
         }
       }
     })()
-  }, [room?.pawns.yellow.position[0], room?.pawns.yellow.position[1]])
-
-  useEffect(() => {
-    (async() => {
-      if (room && room.pawns && color !== "orange") {
-        const pawnColor = room.pawns[color];
-        const currentPlayer = room.players.find((player: any) => player.number === playerState.number)
-        if (pawnColor.playerHeld === currentPlayer.number) {
-          const newRoomValue = {...room};
-  
-          const blockedDirections: BlockedPositions = {
-            up: {
-              position: null,
-              gridPosition: null
-            },
-            right: {
-              position: null,
-              gridPosition: null
-            },
-            left: {
-              position: null,
-              gridPosition: null
-            },
-            down: {
-              position: null,
-              gridPosition: null
-            },
-          }
-  
-          currentPlayer.playerDirections.forEach((direction: direction) => {
-            const blockedSpace = getFirstBlockedSpace(pawnColor, direction);
-            blockedDirections[direction].position = blockedSpace.position
-            blockedDirections[direction].gridPosition = blockedSpace.gridPosition
-          })
-  
-          newRoomValue.pawns[color].blockedPositions = blockedDirections;
-  
-          await setDoc(
-            gamesRef.doc(gameState.roomId), 
-            { 
-              pawns: newRoomValue.pawns
-            },
-            {merge: true}
-          )
-          playerDispatch({type: "showMovableSpaces", value: currentPlayer.playerDirections, color})
-        }
-      }
-    })()
-  }, [room?.pawns.orange.position[0], room?.pawns.orange.position[1]])
-
-  useEffect(() => {
-    (async() => {
-      if (room && room.pawns && color !== "purple") {
-        const pawnColor = room.pawns[color];
-        const currentPlayer = room.players.find((player: any) => player.number === playerState.number)
-        if (pawnColor.playerHeld === currentPlayer.number) {
-          const newRoomValue = {...room};
-  
-          const blockedDirections: BlockedPositions = {
-            up: {
-              position: null,
-              gridPosition: null
-            },
-            right: {
-              position: null,
-              gridPosition: null
-            },
-            left: {
-              position: null,
-              gridPosition: null
-            },
-            down: {
-              position: null,
-              gridPosition: null
-            },
-          }
-  
-          currentPlayer.playerDirections.forEach((direction: direction) => {
-            const blockedSpace = getFirstBlockedSpace(pawnColor, direction);
-            blockedDirections[direction].position = blockedSpace.position
-            blockedDirections[direction].gridPosition = blockedSpace.gridPosition
-          })
-  
-          newRoomValue.pawns[color].blockedPositions = blockedDirections;
-  
-          await setDoc(
-            gamesRef.doc(gameState.roomId), 
-            { 
-              pawns: newRoomValue.pawns
-            },
-            {merge: true}
-          )
-          playerDispatch({type: "showMovableSpaces", value: currentPlayer.playerDirections, color})
-        }
-      }
-    })()
-  }, [room?.pawns.purple.position[0], room?.pawns.purple.position[1]])
-
-  useEffect(() => {
-    (async() => {
-      if (room && room.pawns && color !== "green") {
-        const pawnColor = room.pawns[color];
-        const currentPlayer = room.players.find((player: any) => player.number === playerState.number)
-        if (pawnColor.playerHeld === currentPlayer.number) {
-          const newRoomValue = {...room};
-  
-          const blockedDirections: BlockedPositions = {
-            up: {
-              position: null,
-              gridPosition: null
-            },
-            right: {
-              position: null,
-              gridPosition: null
-            },
-            left: {
-              position: null,
-              gridPosition: null
-            },
-            down: {
-              position: null,
-              gridPosition: null
-            },
-          }
-  
-          currentPlayer.playerDirections.forEach((direction: direction) => {
-            const blockedSpace = getFirstBlockedSpace(pawnColor, direction);
-            blockedDirections[direction].position = blockedSpace.position
-            blockedDirections[direction].gridPosition = blockedSpace.gridPosition
-          })
-  
-          newRoomValue.pawns[color].blockedPositions = blockedDirections;
-  
-          await setDoc(
-            gamesRef.doc(gameState.roomId), 
-            { 
-              pawns: newRoomValue.pawns
-            },
-            {merge: true}
-          )
-          playerDispatch({type: "showMovableSpaces", value: currentPlayer.playerDirections, color})
-        }
-      }
-    })()
-  }, [room?.pawns.green.position[0], room?.pawns.green.position[1]])
-
-  // const {pawnState, pawnDispatch} = usePawn();
-  // const pawn = pawnState[color as keyof PawnState];
+  }, [room?.pawns[color].position[0], room?.pawns[color].position[1]])
   
   const directionPositionValue = {
     "up": -1,
@@ -233,7 +87,6 @@ const Pawn = ({color}: pawnProps) => {
     }
     return extraSpaces
   }
-
 
   const findDirectionAdjacentTile = (pawn: HeroPawn, alignmentPositionConstant: "row" | "col", direction: direction) => {
     const positionConstantValue = alignmentPositionConstant === "col" ? 0 : 1;
@@ -329,6 +182,102 @@ const Pawn = ({color}: pawnProps) => {
       }
       return pawn.position[0] === colIndex && pawn.position[1] === rowIndex;
     })
+  }
+
+  // Alter so it doesnt show if has blocked
+  const getEscalatorSpace = (pawn: HeroPawn, direction: direction) => {
+    const pawnPosition = pawn.position;
+    const startCol = pawnPosition[0];
+    const startRow = pawnPosition[1];
+    let escalatorSpacePosition = null;
+    let escalatorGridPosition = null;
+    let escalatorName = null;
+
+    const currentTile = room.tiles.find((tile: any) => tile.gridPosition[0] === pawn.gridPosition[0] && tile.gridPosition[1] === pawn.gridPosition[1]);
+    if (currentTile) {
+      const tileRow = Object.values(currentTile.spaces!).find((row, rowIndex) => rowIndex === startRow);
+      const currentSpace = (tileRow as any).find((col: any, colIndex: number) => colIndex === startCol);
+      if (currentSpace && currentSpace.details?.hasEscalator) {
+        escalatorSpacePosition = [startCol, startRow];
+        escalatorGridPosition = currentTile.gridPosition;
+        escalatorName = currentSpace.details?.escalatorName;
+      }
+    }
+
+    const allSpaces = getAllDirectionalSpaces(pawn, direction);
+    const spacesInCurrentTile = allSpaces.length < 4 ? allSpaces.length : allSpaces.length - 4;
+    
+    let startIndexAlignment = 0;
+    let changeInRow = false;
+    let readArrayBackwards = false;
+    let wallDirection: direction = "up"
+
+    if (direction === "up") {
+      startIndexAlignment = startRow - 1;
+      readArrayBackwards = true;
+      changeInRow = true;
+      wallDirection = "down"
+    }
+    else if (direction === "down") {
+      startIndexAlignment = startRow + 1;
+      changeInRow = true;
+      wallDirection = "up"
+    }
+    else if (direction === "right") {
+      startIndexAlignment = startCol + 1;
+      wallDirection = "left"
+    }
+    else if (direction === "left") {
+      startIndexAlignment = startCol - 1;
+      readArrayBackwards = true;
+      wallDirection = "right"
+    }
+
+    for (let i = 0; i <= allSpaces.length - 1; i++) {
+      const indexInCurrentTile = readArrayBackwards ? startIndexAlignment - i : startIndexAlignment + i;
+      const indexInAdjacentTile = readArrayBackwards ? allSpaces.length - 1 - i : i - spacesInCurrentTile;
+
+      const changeIndex = i < spacesInCurrentTile ? indexInCurrentTile : indexInAdjacentTile; // col for left
+      let colIndex = changeInRow ? pawn.position[0] : changeIndex;
+      let rowIndex = changeInRow ? changeIndex : pawn.position[1];
+
+      let gridChangeIndex = 0 // 0 option for current tile
+      let gridColIndex = pawn.gridPosition[0];
+      let gridRowIndex = pawn.gridPosition[1];
+
+      if (i >= spacesInCurrentTile) {
+        gridChangeIndex = readArrayBackwards ? -1 : 1;        
+        if (changeInRow) {
+          colIndex = colIndex + gridChangeIndex;
+          gridRowIndex = pawn.gridPosition[1] + gridChangeIndex;
+        }
+        else {
+          rowIndex = rowIndex - gridChangeIndex;
+          gridColIndex = pawn.gridPosition[0] + gridChangeIndex;
+        }
+      }
+      
+      if (allSpaces[i].details?.sideWalls?.includes(wallDirection) || allSpaces[i].type === "barrier") {
+        break;
+      }
+      else if (isSpaceOccupied([gridColIndex, gridRowIndex], colIndex, rowIndex)) { // NOTE colIndex and rowIndex need to change
+        break;
+      }
+      else if (allSpaces[i].details?.hasEscalator && !allSpaces[i].details?.sideWalls?.includes(wallDirection)) {
+        escalatorSpacePosition = [colIndex , rowIndex];
+        escalatorGridPosition = [gridColIndex, gridRowIndex];
+        escalatorName = allSpaces[i].details?.escalatorName;
+        break;
+      }
+    }
+
+    const escalatorSpace = {
+      position: escalatorSpacePosition,
+      gridPosition: escalatorGridPosition,
+      escalatorName
+    }
+
+    return escalatorSpace
   }
 
   const getFirstBlockedSpace = (pawn: HeroPawn, direction: direction) => {
@@ -455,7 +404,15 @@ const Pawn = ({color}: pawnProps) => {
       Object.values(newRoomValue.pawns).forEach((pawn: any) => {
         if (pawn.playerHeld === currentPlayer.number) {
           pawn.playerHeld = null;
-          playerDispatch({type: "showMovableSpaces", value: [], color: pawn.color})
+          playerDispatch({type: "showMovableSpaces", value: []})
+          // teleport
+          if (currentPlayer.playerAbilities.includes("teleport")) {
+            playerDispatch({type: "showTeleportSpaces", color: null})
+          }
+          // escalator
+          if (currentPlayer.playerAbilities.includes("escalator")) {
+            playerDispatch({type: "showEscalatorSpaces", value: []})
+          }
         }
       })
 
@@ -464,10 +421,16 @@ const Pawn = ({color}: pawnProps) => {
       // get pawn position
       // get player direction
       // showArea for spaces in player direction from pawn position
+      const escalatorSpaces: Escalator[] = [];
       playerDirections.forEach((direction: direction) => {
         const blockedSpace = getFirstBlockedSpace(pawnColor, direction);
         blockedDirections[direction].position = blockedSpace.position
         blockedDirections[direction].gridPosition = blockedSpace.gridPosition
+        if (currentPlayer.playerAbilities.includes("escalator")) {
+          const escalatorSpace = getEscalatorSpace(pawnColor, direction);
+          escalatorSpaces.push(escalatorSpace);
+          console.log("escalatorSpace", escalatorSpace)
+        }
       })
 
       newRoomValue.pawns[color].blockedPositions = blockedDirections;
@@ -480,7 +443,15 @@ const Pawn = ({color}: pawnProps) => {
         },
         {merge: true}
       )
-      playerDispatch({type: "showMovableSpaces", value: playerDirections, color})
+      playerDispatch({type: "showMovableSpaces", value: playerDirections})
+      // teleport
+      if (currentPlayer.playerAbilities.includes("teleport")) {
+        playerDispatch({type: "showTeleportSpaces", color})
+      }
+      // escalator
+      if (escalatorSpaces.length) {
+        playerDispatch({type: "showEscalatorSpaces", value: escalatorSpaces})
+      }
     }
     else if (pawnColor.playerHeld && pawnColor.playerHeld === currentPlayer.number) {
       newRoomValue.pawns[color].playerHeld = null;
@@ -494,7 +465,15 @@ const Pawn = ({color}: pawnProps) => {
         {merge: true}
       )
 
-      playerDispatch({type: "showMovableSpaces", value: [], color})
+      playerDispatch({type: "showMovableSpaces", value: []})
+      // teleport
+      if (currentPlayer.playerAbilities.includes("teleport")) {
+        playerDispatch({type: "showTeleportSpaces", color: null})
+      }
+      // escalator
+      if (currentPlayer.playerAbilities.includes("escalator")) {
+        playerDispatch({type: "showEscalatorSpaces", value: []})
+      }
     }
   }
 
@@ -523,7 +502,7 @@ const Pawn = ({color}: pawnProps) => {
             {/* {console.log('rendering pawn')} */}
           <div 
             className={`pawn ${color}`} 
-            onClick={_handleClick}
+            onClick={gameState.gameOver ? () => {} : gameState.timerRunning ? _handleClick : () => {}}
             style={{
               gridColumnStart: room?.pawns[color]?.position[0] + 1,
               gridRowStart: room?.pawns[color]?.position[1] + 1,

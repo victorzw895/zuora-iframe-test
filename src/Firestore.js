@@ -19,4 +19,5 @@ const firebaseConfig = {
 // Initialize Firebase
 export const firebaseApp = firebase.initializeApp(firebaseConfig);
 export const firestore = firebaseApp.firestore();
+export const gamesRef = firestore.collection('games');
 // export const db = getFirestore();

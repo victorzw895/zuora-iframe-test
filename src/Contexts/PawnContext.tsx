@@ -69,13 +69,6 @@ export const PawnFactory = (color: heroColor, startPosition: number[]) => {
     gridPosition: [8, 8],
     ability: '',
     canUseAbility: false,
-    // move: () => {},
-    // useAbility: () => {},
-    // stealWeapon: () => {},
-    // escape: () => {return false},
-    // resetPlayerHeld() {
-    //   this.playerHeld = null
-    // }
   }
 }
 
@@ -118,10 +111,6 @@ const pawnReducer = (pawnState: PawnState, action: any) => {
 
   switch (action.type) {
     case 'playerHeld': 
-      // newState.yellow.resetPlayerHeld();
-      // newState.green.resetPlayerHeld();
-      // newState.purple.resetPlayerHeld();
-      // newState.orange.resetPlayerHeld();
       newState[action.color as keyof PawnState].playerHeld = action.value;
       return newState;
     case 'movePawn': 

@@ -2,30 +2,23 @@ import React, { createContext, useContext, useReducer } from 'react';
 import { Game, Player, playerNumber, direction, basicAbility } from '../types';
 
 type Action = {type: 'joinRoom', value: String, playerName: string} | 
+              {type: 'toggleTimer', value: boolean} | 
+              {type: 'timeLeft', minutes: number, seconds: number} | 
+              {type: 'gameOver'} | 
               // {type: 'joinRoom', value: Game, playerName: string} | 
               {type: 'startGame'} | undefined;
 type Dispatch = (action: Action) => void;
 
 type GameProviderProps = {children: React.ReactNode}
 
-// assign random number
-
-export const PlayerFactory = (playerName: string, currentPlayers: number) => {
-  return {
-    name: playerName,
-    number: currentPlayers + 1 as playerNumber,
-    playerDirections: [],
-    showMovableDirections: [],
-    playerPawnHeld: null,
-    playerAbilities: [],
-    pingPlayer: null,
-  }
-}
-
 const gameInitialState: Game = {
   roomId: "",
   // players: [],
   // gameStarted: false
+  timerRunning: false,
+  minutesLeft: 3,
+  secondsLeft: 20,
+  gameOver: false
 }
 
 const directions: direction[] = ["up", "right", "down", "left"];
@@ -133,7 +126,27 @@ const gameReducer = (gameState: Game, action: any) => {
     }
     case 'startGame': {
       // newState.players = assignRandomActions(newState.players);
-      // newState.gameStarted = true;
+      newState.timerRunning = true;
+      return newState;
+    }
+    case 'timeLeft': {
+      console.log("update time left")
+      newState.minutesLeft = action.minutes;
+      newState.secondsLeft = action.seconds;
+      // newState.players.push(PlayerFactory(newState.players.length, action.playerName))
+      return newState;
+    }
+    case 'toggleTimer': {
+      newState.timerRunning = action.value;
+      // newState.players.push(PlayerFactory(newState.players.length, action.playerName))
+      return newState;
+    }
+    case 'gameOver': {
+      // newState.players = assignRandomActions(newState.players);
+      // newState.timerRunning = false;
+      newState.minutesLeft = 0;
+      newState.secondsLeft = 0;
+      newState.gameOver = true;
       return newState;
     }
     default: {
