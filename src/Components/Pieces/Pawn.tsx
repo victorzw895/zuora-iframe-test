@@ -1,7 +1,8 @@
 import React, { MouseEvent, useEffect } from 'react';
 import { heroColor, HeroPawn, TileInterface, direction, Space as SpaceType, Escalator } from '../../types';
+import { Room, DBHeroPawn } from '../../firestore-types';
 import { tileWallSize, spaceSize } from '../../constants';
-import { BlockedPositions } from '../../Contexts/PawnContext';
+import { usePawn, BlockedPositions } from '../../Contexts/PawnContext';
 import { usePlayer } from '../../Contexts/PlayerContext';
 import { useGame } from '../../Contexts/GameContext';
 import { setDoc } from "firebase/firestore"; 
@@ -16,16 +17,17 @@ interface pawnProps {
 const Pawn = ({color}: pawnProps) => {
   const { gameState, gameDispatch } = useGame();
   const { playerState, playerDispatch } = usePlayer();
+  const { pawnState, pawnDispatch } = usePawn();
 
   const [room] = useDocumentData(gamesRef.doc(gameState.roomId));
 
-  const { pawns, players } = room || {}
+  const { pawns, players }: Room = room || {}
 
   // Recalculate blocked position and showMovable when other player moves pawns
   useEffect(() => {
     (async() => {
       if (room && pawns) {
-        const currentPlayer = players.find((player: any) => player.number === playerState.number)
+        const currentPlayer = players.find((player: any) => player.number === playerState.number)!
         const playerHeldPawn: any = Object.values(pawns).find((pawn: any) => pawn.playerHeld === currentPlayer.number)
         if (playerHeldPawn) {
           const newRoomValue = {...room};
@@ -429,13 +431,13 @@ const Pawn = ({color}: pawnProps) => {
         if (currentPlayer.playerAbilities.includes("escalator")) {
           const escalatorSpace = getEscalatorSpace(pawnColor, direction);
           escalatorSpaces.push(escalatorSpace);
-          console.log("escalatorSpace", escalatorSpace)
         }
       })
 
-      newRoomValue.pawns[color].blockedPositions = blockedDirections;
-      console.log("blockedDirections", blockedDirections, currentPlayer);
+      // NOT SAVING blockedPositions on DB
+      // newRoomValue.pawns[color].blockedPositions = blockedDirections;
 
+      pawnDispatch({type: "addBlockedPositions", value: blockedDirections, color});
       await setDoc(
         gamesRef.doc(gameState.roomId), 
         { 
@@ -490,22 +492,22 @@ const Pawn = ({color}: pawnProps) => {
       {
         room ? <div className="pawn-grid"
           style={{
-            gridColumnStart: room?.pawns[color]?.gridPosition[0],
-            gridRowStart: room?.pawns[color]?.gridPosition[1],
-            marginTop: room?.pawns[color]?.gridPosition[0] < 8 ? getDisplacementValue(room?.pawns[color]?.gridPosition[0]) : tileWallSize,
-            marginBottom: room?.pawns[color]?.gridPosition[0] > 8 ? getDisplacementValue(room?.pawns[color]?.gridPosition[0]) : tileWallSize,
-            marginLeft: room?.pawns[color]?.gridPosition[1] > 8 ? getDisplacementValue(room?.pawns[color]?.gridPosition[1]) : tileWallSize,
-            marginRight: room?.pawns[color]?.gridPosition[1] < 8 ? getDisplacementValue(room?.pawns[color]?.gridPosition[1]) : tileWallSize,
+            gridColumnStart: pawns[color]?.gridPosition[0],
+            gridRowStart: pawns[color]?.gridPosition[1],
+            marginTop: pawns[color]?.gridPosition[0] < 8 ? getDisplacementValue(pawns[color]?.gridPosition[0]) : tileWallSize,
+            marginBottom: pawns[color]?.gridPosition[0] > 8 ? getDisplacementValue(pawns[color]?.gridPosition[0]) : tileWallSize,
+            marginLeft: pawns[color]?.gridPosition[1] > 8 ? getDisplacementValue(pawns[color]?.gridPosition[1]) : tileWallSize,
+            marginRight: pawns[color]?.gridPosition[1] < 8 ? getDisplacementValue(pawns[color]?.gridPosition[1]) : tileWallSize,
             placeSelf: "center",
             position: "static"
           }}>
             {/* {console.log('rendering pawn')} */}
           <div 
             className={`pawn ${color}`} 
-            onClick={gameState.gameOver ? () => {} : gameState.timerRunning ? _handleClick : () => {}}
+            onClick={gameState.gameOver || room.heroesEscaped.includes(color) ? () => {} : gameState.timerRunning ? _handleClick : () => {}}
             style={{
-              gridColumnStart: room?.pawns[color]?.position[0] + 1,
-              gridRowStart: room?.pawns[color]?.position[1] + 1,
+              gridColumnStart: pawns[color]?.position[0] + 1,
+              gridRowStart: pawns[color]?.position[1] + 1,
               position: "relative"
             }}
           >
@@ -514,8 +516,8 @@ const Pawn = ({color}: pawnProps) => {
               src={`/${color}-pawn.svg`} 
               alt={`${color}-piece`} 
               style={{
-                border: `${room?.pawns[color]?.playerHeld ? 
-                            (room?.pawns[color]?.playerHeld === playerState.number ?
+                border: `${pawns[color]?.playerHeld ? 
+                            (pawns[color]?.playerHeld === playerState.number ?
                               "2px solid blue" 
                                 : 
                               "2px solid grey")

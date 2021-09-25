@@ -1,3 +1,6 @@
+/// <reference types="@welldone-software/why-did-you-render" />
+import './wdyr'; 
+
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, memo } from 'react';
 import { useGame } from '../Contexts/GameContext';
 import { usePlayer } from '../Contexts/PlayerContext';
-import { Space as SpaceType, heroColor, TeleporterSpace, HeroPawn, Escalator, TimerSpace } from '../types';
+import { Space as SpaceType, heroColor, TeleporterSpace, HeroPawn, Escalator, TimerSpace, WeaponSpace, ExitSpace } from '../types';
 import { setDoc, doc, getDoc } from "firebase/firestore"; 
 import { firestore } from "../Firestore";
 import { useDocumentData } from 'react-firebase-hooks/firestore'
@@ -39,6 +39,12 @@ const Space = ({spaceData, showMovableArea, spacePosition, colorSelected, gridPo
   const escalatorName = isEscalator ? spaceData.details?.escalatorName : "";
 
   const isTimer = spaceData.type === "timer";
+
+  const hasWeapon = spaceData.type === "weapon";
+  const weaponColor = hasWeapon ? (spaceData.details as WeaponSpace).color : "";
+
+  const isExit = spaceData.type === "exit";
+  const exitColor = isExit ? (spaceData.details as ExitSpace).color : "";
 
   const [showTeleport, setShowTeleport] = useState(false)
   const [showEscalator, setShowEscalator] = useState(false);
@@ -126,9 +132,25 @@ const Space = ({spaceData, showMovableArea, spacePosition, colorSelected, gridPo
           }
         }
 
+        if (hasWeapon && !(spaceData.details as WeaponSpace).weaponStolen && (spaceData.details as WeaponSpace).color === colorSelected) {
+          newRoomValue.tiles[tileIndex].spaces[spacePosition[1]][spacePosition[0]].details.weaponStolen = true;
+          newRoomValue.weaponsStolen = [...newRoomValue.weaponsStolen, colorSelected]
+        }
+
+        if (isExit && !(spaceData.details as ExitSpace).color && (spaceData.details as ExitSpace).color === colorSelected) {
+          if (newRoomValue.weaponsStolen.length === 4) {
+            newRoomValue.heroesEscaped = [...newRoomValue.heroesEscaped, colorSelected]
+          }
+        }
+
         await setDoc(
           gamesRef.doc(gameState.roomId), 
-          {pawns: newRoomValue.pawns, tiles: newRoomValue.tiles},
+          {
+            pawns: newRoomValue.pawns, 
+            tiles: newRoomValue.tiles,
+            weaponsStolen: newRoomValue.weaponsStolen,
+            heroesEscaped: newRoomValue.heroesEscaped
+          },
           {merge: true}
         )
         playerDispatch({type: "showMovableSpaces", value: []})
@@ -138,22 +160,22 @@ const Space = ({spaceData, showMovableArea, spacePosition, colorSelected, gridPo
     }
   }
 
-  const isTeleporterOccupied = async () => {
-    const docSnap = await getDoc(doc(gamesRef, gameState.roomId));
-    let spaceOccupied = false;
+  // const isTeleporterOccupied = async () => {
+  //   const docSnap = await getDoc(doc(gamesRef, gameState.roomId));
+  //   let spaceOccupied = false;
 
-    if (docSnap.exists()) {
-      Object.values(docSnap.data().pawns).some((pawn: any) => {
-        if (pawn.gridPosition[0] === gridPosition[0] && pawn.gridPosition[1] === gridPosition[1]) {
-          if (pawn.position[0] === spacePosition[0] && pawn.position[1] === spacePosition[1]) {
-            return true;
-          }
-        }
-        return false;
-      })
-    }
-    return spaceOccupied;
-  }
+  //   if (docSnap.exists()) {
+  //     Object.values(docSnap.data().pawns).some((pawn: any) => {
+  //       if (pawn.gridPosition[0] === gridPosition[0] && pawn.gridPosition[1] === gridPosition[1]) {
+  //         if (pawn.position[0] === spacePosition[0] && pawn.position[1] === spacePosition[1]) {
+  //           return true;
+  //         }
+  //       }
+  //       return false;
+  //     })
+  //   }
+  //   return spaceOccupied;
+  // }
 
   return (
     <div 

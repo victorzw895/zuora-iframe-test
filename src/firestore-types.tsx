@@ -8,104 +8,75 @@ export type direction = "up" | "right" | "down" | "left"
 export type basicAbility = "explore" | "teleport" | "escalator"
 
 
-export interface SandTimer {
-  timeLimit: number,
-  pause: boolean,
-  flip: () => void,
-  swapActions: () => void
+// export interface SandTimer {
+//   timeLimit: number,
+//   pause: boolean,
+//   flip: () => void,
+//   swapActions: () => void
+// }
+
+export interface DBPawns {
+  green: DBHeroPawn,
+  yellow: DBHeroPawn,
+  orange: DBHeroPawn,
+  purple: DBHeroPawn,
 }
 
-export interface Game {
-  roomId: string,
-  timerRunning: boolean
-  minutesLeft: number,
-  secondsLeft: number,
-  gameOver: boolean,
-  // weaponsStolen: heroColor[],
-  // heroesEscaped: heroColor[]
-  // players: Player[],
-  // gameStarted: boolean
+export interface Room {
+  // timerRunning: boolean
+  // minutesLeft: number,
+  // gameOver: boolean,
+  gameStarted: boolean
+  timeLeft: number,
+  weaponsStolen: heroColor[],
+  heroesEscaped: heroColor[],
+  players: DBPlayer[],
+  tiles: DBTile[],
+  pawns: DBPawns,
 }
 
-export interface Escalator {
-  position: number[] | null,
-  gridPosition: number[] | null,
-  escalatorName: string | null
-}
 
-export interface Player {
-  // DB
-  // name: string,
-  // playerDirections: direction[],
-  // playerAbilities: basicAbility[],
-  // LOCAL
+export interface DBPlayer {
+  name: string,
   number: playerNumber,
-  showMovableDirections: direction[],
-  showTeleportSpaces: heroColor | null,
-  showEscalatorSpaces: Escalator[]
-  // playerPawnHeld: heroColor | null, // unused
-  // placeTile: () => void,
-  // pingPlayer: ((number: playerNumber) => void) | null,
+  playerDirections: direction[],
+  playerAbilities: basicAbility[],
+  pinged: boolean
 }
 
-type BlockedPosition = {
-  position: number[] | null;
-  gridPosition: number[] | null;
-}
 
-export interface HeroPawn {
-  heroName: heroName,
+export interface DBHeroPawn {
   color: heroColor,
-  weapon: heroWeapon,
-  width: number,
-  height: number,
   playerHeld: playerNumber | null,
-  // resetPlayerHeld: () => void,
   position: number[],
   gridPosition: number[],
   ability: string,
   canUseAbility: boolean,
-  // move: () => void,
-  // useAbility: () => void,
-  // stealWeapon: () => void,
-  // escape: () => boolean,
-  blockedPositions: {
-    up: BlockedPosition,
-    down: BlockedPosition,
-    left: BlockedPosition,
-    right: BlockedPosition
-  }
-  // hasWeapon: boolean
-  // hasEscaped: boolean
 }
 
-export interface TileInterface {
+export interface DBTile {
   id: string,
-  // width: number,
-  // height: number,
-  rotation?: number,
-  spaces?: {
-    0: Space[],
-    1: Space[],
-    2: Space[],
-    3: Space[]
-  },
   gridPosition: number[],
+  spaces: {
+    0: DBSpace[],
+    1: DBSpace[],
+    2: DBSpace[],
+    3: DBSpace[]
+  },
+  rotation?: number,
   placementDirection?: direction,
   entryDirection?: direction,
   entrySide?: direction
 }
 
-export interface Space {
+export interface DBSpace {
   type: SpaceTypeName,
   details?: (SpaceDetails | TimerSpace | TeleporterSpace | ExplorationSpace | SpecialSpace | WeaponSpace | ExitSpace),
 }
 
 interface SpaceDetails {
-  isOccupied?: boolean,
   sideWalls?: direction[],
   hasEscalator?: boolean,
-  // useEscalator?: () => void,
   escalatorName?: string,
   isEntry?: boolean
 }
@@ -131,7 +102,6 @@ interface SpecialSpace extends SpaceDetails {
 }
 
 export interface WeaponSpace extends SpaceDetails {
-  name: heroWeapon,
   weaponStolen: boolean,
   color: heroColor
 }

@@ -68,4 +68,6 @@ const NewTileArea = React.memo(({tile, clearHighlightAreas}: NewTileAreaProps) =
   )
 }, areEqual)
 
+NewTileArea.whyDidYouRender = true
+
 export default NewTileArea;

@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useReducer } from 'react';
 import { Game, Player, playerNumber, direction, basicAbility } from '../types';
+import { DBPlayer } from '../firestore-types';
 
-type Action = {type: 'joinRoom', value: String, playerName: string} | 
+type Action = {type: 'joinRoom', value: String} | 
               {type: 'toggleTimer', value: boolean} | 
               {type: 'timeLeft', minutes: number, seconds: number} | 
               {type: 'gameOver'} | 
@@ -18,7 +19,9 @@ const gameInitialState: Game = {
   timerRunning: false,
   minutesLeft: 3,
   secondsLeft: 20,
-  gameOver: false
+  gameOver: false,
+  // weaponsStolen: [],
+  // heroesEscaped: []
 }
 
 const directions: direction[] = ["up", "right", "down", "left"];
@@ -32,7 +35,7 @@ const randomize = (array: any[]) => {
   })
 }
 
-export const assignRandomActions = (players: Player[]) => {
+export const assignRandomActions = (players: DBPlayer[]) => {
   const randomPlayerOrder = randomize(players);
   
   return randomPlayerOrder.map(player => {

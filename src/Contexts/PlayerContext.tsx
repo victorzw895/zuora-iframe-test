@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useReducer } from 'react';
 import { HeroPawn, heroName, heroWeapon, heroColor, Player, playerNumber, direction, Escalator } from '../types';
+import { DBPlayer } from '../firestore-types';
 
 type Action = {type: 'playerHeld', value: number | null, color: heroColor} | 
               {type: 'showMovableSpaces', value: direction[]} | 
@@ -10,33 +11,39 @@ type Dispatch = (action: Action) => void;
 
 type PlayerProviderProps = {children: React.ReactNode}
 
+export interface PlayerFactoryType {
+  player: Player,
+  dbPlayer: DBPlayer
+}
+
 export const PlayerFactory = (playerName: string, currentPlayers: number) => {
-  return {
-    name: playerName,
+  const localPlayerState: Player = {
     number: currentPlayers + 1 as playerNumber,
-    playerDirections: [],
     showMovableDirections: [],
     showTeleportSpaces: null,
     showEscalatorSpaces: [],
-    playerPawnHeld: null,
-    playerAbilities: [],
-    pingPlayer: null,
   }
+
+  const dbPlayerState: DBPlayer = {
+    name: playerName,
+    number: currentPlayers + 1 as playerNumber,
+    playerDirections: [],
+    playerAbilities: [],
+    pinged: false
+  }
+
+  return {
+    player: localPlayerState, 
+    dbPlayer: dbPlayerState}
 }
 
 // assign random number
 
 const playerInitialState: Player = {
-  name: "",
   number: null,
-  playerDirections: [],
   showMovableDirections: [],
-  playerPawnHeld: null,
-  playerAbilities: [],
   showTeleportSpaces: null,
   showEscalatorSpaces: []
-  // placeTile: () => void,
-  // pingPlayer: (number: playerNumber) => {},
 }
 
 const PlayerContext = createContext<{playerState: Player; playerDispatch: Dispatch} | undefined>(undefined);

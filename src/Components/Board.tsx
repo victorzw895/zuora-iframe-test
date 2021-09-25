@@ -3,9 +3,11 @@ import Tile from './Tile';
 import NewTileArea from './NewTileArea';
 import Pawn from './Pieces/Pawn';
 import PlayerArea from './PlayerArea';
-import { TileInterface, HeroPawn } from '../types';
+import { TileInterface, HeroPawn, ExplorationSpace } from '../types';
+import { DBTile, DBHeroPawn, DBPawns, Room } from '../firestore-types';
 import './Board.scss';
 import { useGame } from '../Contexts/GameContext';
+import { usePlayer } from '../Contexts/PlayerContext';
 import Draggable from 'react-draggable';
 import { firestore, gamesRef } from "../Firestore";
 import { useDocumentData, useDocumentDataOnce } from 'react-firebase-hooks/firestore'
@@ -27,21 +29,13 @@ const time = new Date();
 const Board = () => {
   const draggableNodeRef = useRef(null);
   const { gameState, gameDispatch } = useGame();
+  const { playerState, playerDispatch } = usePlayer();
 
   const [room] = useDocumentData(gamesRef.doc(gameState.roomId));
 
-  const { pawns, tiles } = room || {}
+  const { pawns, tiles, players }: Room = room || {}
 
   const [availableArea, setAvailableArea] = useState<TileInterface[]>(startTiles() as TileInterface[]);
-
-  useEffect(() => {
-    console.log("---------- BOARD --------")
-    console.log('room', room)
-  }, [room])
-
-  useEffect(() => {
-    console.log("Board.tsx")
-  })
 
   useEffect(() => {
     // IDEALLY on game start
@@ -50,31 +44,33 @@ const Board = () => {
   }, [])
 
   const getExplorationTile = (pawn: HeroPawn, pawnColIndex: number, pawnRowIndex: number) => {
-    const currentTile = tiles.find((tile: any) => tile.gridPosition[0] === pawn.gridPosition[0] && tile.gridPosition[1] === pawn.gridPosition[1])
+    const currentTile = tiles.find(tile => tile.gridPosition[0] === pawn.gridPosition[0] && tile.gridPosition[1] === pawn.gridPosition[1])
     if (currentTile) {
-      const pawnRow = Object.values(currentTile.spaces!).filter((row: any, rowIndex: number) => rowIndex === pawnRowIndex).flat(1)
-      const pawnSpace = pawnRow.find((col: any, colIndex: number) => colIndex === pawnColIndex)
-      const spaceDetails = (pawnSpace as any).details as any
-      if (pawnSpace && (pawnSpace as any).type === "exploration" && spaceDetails.color === pawn.color) {
-        if (spaceDetails.exploreDirection === "up") {
-          const tileExists = tiles.find((tile: any) => tile.gridPosition[0] === currentTile.gridPosition[0] && tile.gridPosition[1] === currentTile.gridPosition[1] - 1)
-          if (tileExists) return
-          return {gridPosition: [currentTile.gridPosition[0], currentTile.gridPosition[1] - 1], placementDirection: spaceDetails.exploreDirection}
-        }
-        if (spaceDetails.exploreDirection === "down") {
-          const tileExists = tiles.find((tile: any) => tile.gridPosition[0] === currentTile.gridPosition[0] && tile.gridPosition[1] === currentTile.gridPosition[1] + 1)
-          if (tileExists) return
-          return {gridPosition: [currentTile.gridPosition[0], currentTile.gridPosition[1] + 1], placementDirection: spaceDetails.exploreDirection}
-        }
-        if (spaceDetails.exploreDirection === "left") {
-          const tileExists = tiles.find((tile: any) => tile.gridPosition[0] === currentTile.gridPosition[0] - 1 && tile.gridPosition[1] === currentTile.gridPosition[1])
-          if (tileExists) return
-          return {gridPosition: [currentTile.gridPosition[0] - 1, currentTile.gridPosition[1]], placementDirection: spaceDetails.exploreDirection}
-        }
-        if (spaceDetails.exploreDirection === "right") {
-          const tileExists = tiles.find((tile: any) => tile.gridPosition[0] === currentTile.gridPosition[0] + 1 && tile.gridPosition[1] === currentTile.gridPosition[1])
-          if (tileExists) return
-          return {gridPosition: [currentTile.gridPosition[0] + 1, currentTile.gridPosition[1]], placementDirection: spaceDetails.exploreDirection}
+      const pawnRow = Object.values(currentTile.spaces).filter((row, rowIndex) => rowIndex === pawnRowIndex).flat(1)
+      const explorationSpace = pawnRow.find((col, colIndex) => colIndex === pawnColIndex && col.type === "exploration")!
+      if (explorationSpace) {
+        const spaceDetails = explorationSpace.details as ExplorationSpace
+        if (spaceDetails.color === pawn.color) {
+          if (spaceDetails.exploreDirection === "up") {
+            const tileExists = tiles.find(tile => tile.gridPosition[0] === currentTile.gridPosition[0] && tile.gridPosition[1] === currentTile.gridPosition[1] - 1)
+            if (tileExists) return
+            return {gridPosition: [currentTile.gridPosition[0], currentTile.gridPosition[1] - 1], placementDirection: spaceDetails.exploreDirection}
+          }
+          if (spaceDetails.exploreDirection === "down") {
+            const tileExists = tiles.find(tile => tile.gridPosition[0] === currentTile.gridPosition[0] && tile.gridPosition[1] === currentTile.gridPosition[1] + 1)
+            if (tileExists) return
+            return {gridPosition: [currentTile.gridPosition[0], currentTile.gridPosition[1] + 1], placementDirection: spaceDetails.exploreDirection}
+          }
+          if (spaceDetails.exploreDirection === "left") {
+            const tileExists = tiles.find(tile => tile.gridPosition[0] === currentTile.gridPosition[0] - 1 && tile.gridPosition[1] === currentTile.gridPosition[1])
+            if (tileExists) return
+            return {gridPosition: [currentTile.gridPosition[0] - 1, currentTile.gridPosition[1]], placementDirection: spaceDetails.exploreDirection}
+          }
+          if (spaceDetails.exploreDirection === "right") {
+            const tileExists = tiles.find(tile => tile.gridPosition[0] === currentTile.gridPosition[0] + 1 && tile.gridPosition[1] === currentTile.gridPosition[1])
+            if (tileExists) return
+            return {gridPosition: [currentTile.gridPosition[0] + 1, currentTile.gridPosition[1]], placementDirection: spaceDetails.exploreDirection}
+          }
         }
       }
     }
@@ -83,7 +79,7 @@ const Board = () => {
   const highlightNewTileArea = () => {
     const placeholderTiles = [...availableArea];
 
-    const highlightAreas = Object.values(pawns).map((pawn: any) => {
+    const highlightAreas = Object.values(pawns).map(pawn => {
       return getExplorationTile(pawn, pawn.position[0], pawn.position[1]) 
     }).filter(gridPos => gridPos) as TileInterface[]
 
@@ -125,9 +121,9 @@ const Board = () => {
                 />
             )
           })}
-          {tiles && tiles.length > 0 && tiles.map((newTile: any, tileIndex: number) => {
+          {tiles && tiles.length > 0 && tiles.map((newTile, tileIndex) => {
             return (
-              <Tile key={tileIndex} tileIndex={tileIndex}/>
+              <Tile key={tileIndex} tileIndex={tileIndex} tileData={newTile} />
             )
           })}
           <Pawn color="yellow" />
@@ -136,9 +132,11 @@ const Board = () => {
           <Pawn color="purple"/>
         </div>
       </Draggable>
-      <PlayerArea highlightNewTileArea={highlightNewTileArea}/>
+      <PlayerArea highlightNewTileArea={highlightNewTileArea} player={players?.find(player => player.number === playerState.number)!} />
     </div>
   )
 }
+
+// Board.whyDidYouRender = true
 
 export default Board;
