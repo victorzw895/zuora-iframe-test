@@ -10,8 +10,7 @@ import { useGame } from '../Contexts/GameContext';
 import { usePlayer } from '../Contexts/PlayerContext';
 import Draggable from 'react-draggable';
 import { firestore, gamesRef } from "../Firestore";
-import { useDocumentData, useDocumentDataOnce } from 'react-firebase-hooks/firestore'
-import { collection, query, where } from "firebase/firestore";
+import { useDocumentData } from 'react-firebase-hooks/firestore'
 import Timer from './Timer';
 
 const startTiles = () => {
@@ -43,7 +42,8 @@ const Board = () => {
     time.setSeconds(time.getSeconds() + 200);
   }, [])
 
-  const getExplorationTile = (pawn: HeroPawn, pawnColIndex: number, pawnRowIndex: number) => {
+
+  const getExplorationTile = (pawn: DBHeroPawn, pawnColIndex: number, pawnRowIndex: number) => {
     const currentTile = tiles.find(tile => tile.gridPosition[0] === pawn.gridPosition[0] && tile.gridPosition[1] === pawn.gridPosition[1])
     if (currentTile) {
       const pawnRow = Object.values(currentTile.spaces).filter((row, rowIndex) => rowIndex === pawnRowIndex).flat(1)

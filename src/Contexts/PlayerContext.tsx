@@ -34,7 +34,8 @@ export const PlayerFactory = (playerName: string, currentPlayers: number) => {
 
   return {
     player: localPlayerState, 
-    dbPlayer: dbPlayerState}
+    dbPlayer: dbPlayerState
+  }
 }
 
 // assign random number

@@ -104,7 +104,7 @@ const Tile = memo(({startTile, id, tileIndex, tileData}: tileProps) => {
           {tileData.spaces && Object.values(tileData.spaces).map((row, rowIndex) => {
             // let rowBlocked = true;
             let highlightSpace = false;
-            let colorHeld: HeroPawn | undefined;
+            let colorHeld: DBHeroPawn | undefined;
 
             Object.values(pawns).forEach(pawn => {
               if (pawn.playerHeld && pawn.playerHeld === playerState.number) {

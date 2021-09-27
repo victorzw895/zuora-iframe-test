@@ -79,7 +79,7 @@ const Pawn = ({color}: pawnProps) => {
     "left": -1
   }
 
-  const getExtraDirectionalSpaces = (tileFound: TileInterface, pawn: HeroPawn, direction: direction) => {
+  const getExtraDirectionalSpaces = (tileFound: TileInterface, pawn: DBHeroPawn, direction: direction) => {
     let extraSpaces;
     if (direction === "up" || direction === "down") {
       extraSpaces = Object.values(tileFound.spaces!).map((row) => row.filter((col, colIndex) => colIndex === pawn.position[0] + directionPositionValue[direction])).flat(1)
@@ -90,7 +90,7 @@ const Pawn = ({color}: pawnProps) => {
     return extraSpaces
   }
 
-  const findDirectionAdjacentTile = (pawn: HeroPawn, alignmentPositionConstant: "row" | "col", direction: direction) => {
+  const findDirectionAdjacentTile = (pawn: DBHeroPawn, alignmentPositionConstant: "row" | "col", direction: direction) => {
     const positionConstantValue = alignmentPositionConstant === "col" ? 0 : 1;
     const positionVariantValue = alignmentPositionConstant === "col" ? 1 : 0;
     if (room.tiles.length > 1) {
@@ -103,7 +103,7 @@ const Pawn = ({color}: pawnProps) => {
     return;
   }
 
-  const filterRowsOfTargetDirection = (currentTile: TileInterface, pawn: HeroPawn, direction: direction) => {
+  const filterRowsOfTargetDirection = (currentTile: TileInterface, pawn: DBHeroPawn, direction: direction) => {
     let remainingRows
 
     if (direction === "left" || direction === "right") {
@@ -121,7 +121,7 @@ const Pawn = ({color}: pawnProps) => {
     }
   }
 
-  const filterSpacesFromRows = (rows: SpaceType[][], pawn: HeroPawn, direction: direction) => {
+  const filterSpacesFromRows = (rows: SpaceType[][], pawn: DBHeroPawn, direction: direction) => {
     if (!rows) return;
 
     let remainingSpaces
@@ -141,7 +141,7 @@ const Pawn = ({color}: pawnProps) => {
     }
   }
 
-  const getAllDirectionalSpaces = (pawn: HeroPawn, direction: direction) => {
+  const getAllDirectionalSpaces = (pawn: DBHeroPawn, direction: direction) => {
     const directionalSpaces = [];
     const currentTile = room.tiles.find((tile: any) => tile.gridPosition[0] === pawn.gridPosition[0] && tile.gridPosition[1] === pawn.gridPosition[1]);
     const rows = filterRowsOfTargetDirection(currentTile!, pawn, direction) || [];
@@ -187,7 +187,7 @@ const Pawn = ({color}: pawnProps) => {
   }
 
   // Alter so it doesnt show if has blocked
-  const getEscalatorSpace = (pawn: HeroPawn, direction: direction) => {
+  const getEscalatorSpace = (pawn: DBHeroPawn, direction: direction) => {
     const pawnPosition = pawn.position;
     const startCol = pawnPosition[0];
     const startRow = pawnPosition[1];
@@ -282,7 +282,7 @@ const Pawn = ({color}: pawnProps) => {
     return escalatorSpace
   }
 
-  const getFirstBlockedSpace = (pawn: HeroPawn, direction: direction) => {
+  const getFirstBlockedSpace = (pawn: DBHeroPawn, direction: direction) => {
     const pawnPosition = pawn.position;
     const startCol = pawnPosition[0];
     const startRow = pawnPosition[1];

@@ -2,7 +2,7 @@ import React, { useState, ChangeEvent, useEffect } from 'react';
 import cryptoRandomString from 'crypto-random-string';
 import { useGame, assignRandomActions } from '../Contexts/GameContext';
 import { usePlayer, PlayerFactory, PlayerFactoryType } from '../Contexts/PlayerContext';
-import { pawnsInitialState } from '../Contexts/PawnContext';
+import { pawnDBInitialState } from '../Contexts/PawnContext';
 import { Stack, Button, TextField, List, ListItem, Paper } from '@mui/material';
 import { Player } from '../types';
 import { Room, DBPlayer } from '../firestore-types';
@@ -25,6 +25,7 @@ const Lobby = () => {
   const [room] = useDocumentData(gameDoc);
 
   const { players } = room || {}
+
 
   const _handleRoomCode = (e: ChangeEvent<HTMLInputElement>) => {
     setExistingRoomCode(e.target.value)
@@ -130,7 +131,7 @@ const Lobby = () => {
         players: dbPlayers, 
         gameStarted: true,
         tiles: [initTile],
-        pawns: pawnsInitialState
+        pawns: pawnDBInitialState
       },
       {merge: true}
     )

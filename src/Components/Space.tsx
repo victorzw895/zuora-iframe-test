@@ -56,12 +56,15 @@ const Space = ({spaceData, showMovableArea, spacePosition, colorSelected, gridPo
         let isOccupied = false;
         const docSnap = await getDoc(doc(gamesRef, gameState.roomId));
         if (docSnap.exists()) {
-          const pawn: any = Object.values(docSnap.data().pawns).find((pawn: any) => pawn.color === teleporterColor)
-          if (pawn.gridPosition[0] === gridPosition[0] && pawn.gridPosition[1] === gridPosition[1]) {
-            if (pawn.position[0] === spacePosition[0] && pawn.position[1] === spacePosition[1]) {
-              isOccupied = true;
+          const pawn: any = Object.values(docSnap.data().pawns).some((pawn: any) => {
+            if (pawn.gridPosition[0] === gridPosition[0] && pawn.gridPosition[1] === gridPosition[1]) {
+              if (pawn.position[0] === spacePosition[0] && pawn.position[1] === spacePosition[1]) {
+                isOccupied = true;
+                return true;
+              }
             }
-          }
+            return false
+          })
         }
         setShowTeleport(!isOccupied)
       }

@@ -59,24 +59,12 @@ export interface HeroPawn {
   weapon: heroWeapon,
   width: number,
   height: number,
-  playerHeld: playerNumber | null,
-  // resetPlayerHeld: () => void,
-  position: number[],
-  gridPosition: number[],
-  ability: string,
-  canUseAbility: boolean,
-  // move: () => void,
-  // useAbility: () => void,
-  // stealWeapon: () => void,
-  // escape: () => boolean,
   blockedPositions: {
     up: BlockedPosition,
     down: BlockedPosition,
     left: BlockedPosition,
     right: BlockedPosition
   }
-  // hasWeapon: boolean
-  // hasEscaped: boolean
 }
 
 export interface TileInterface {

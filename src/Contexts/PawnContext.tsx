@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useReducer } from 'react';
 import { HeroPawn, heroName, heroWeapon, heroColor } from '../types';
+import { DBHeroPawn } from '../firestore-types';
 
 const startPositions = [
   [1, 1],
@@ -16,7 +17,7 @@ const takePosition = () => {
   return randomPosition.splice(0, 1).flat(1);
 }
 
-export const PawnFactory = (color: heroColor, startPosition: number[]) => {
+export const PawnFactory = (color: heroColor, startPosition?: number[]) => {
   // console.log('pawn factory', color, startPosition);
   let heroName, weapon;
   switch (color) {
@@ -40,14 +41,12 @@ export const PawnFactory = (color: heroColor, startPosition: number[]) => {
       break;
   }
 
-  return {
+  const localPawnState: HeroPawn = {
     heroName: heroName as heroName,
     color,
     height: 46.25,
     width: 46.25,
     weapon: weapon as heroWeapon,
-    playerHeld: null,
-    position: startPosition,
     blockedPositions: {
       up: {
         position: null,
@@ -66,9 +65,21 @@ export const PawnFactory = (color: heroColor, startPosition: number[]) => {
         gridPosition: null
       }
     },
+    
+  }
+
+  const dbPawnState: DBHeroPawn = {
+    color,
+    playerHeld: null,
+    position: startPosition || [],
     gridPosition: [8, 8],
     ability: '',
     canUseAbility: false,
+  }
+
+  return {
+    pawn: localPawnState,
+    dbPawn: dbPawnState
   }
 }
 
@@ -85,8 +96,9 @@ export type BlockedPositions = {
 }
 
 
-type Action = {type: 'playerHeld', value: number | null, color: heroColor} | 
-              {type: 'movePawn', value: number[], color: heroColor} | 
+type Action = 
+              // {type: 'playerHeld', value: number | null, color: heroColor} | 
+              // {type: 'movePawn', value: number[], color: heroColor} | 
               {type: 'addBlockedPositions', value: BlockedPositions, color: heroColor} | undefined;
 type Dispatch = (action: Action) => void;
 export type PawnState = {
@@ -95,13 +107,28 @@ export type PawnState = {
   purple: HeroPawn,
   orange: HeroPawn,
 }
+
+export type DBPawnState = {
+  yellow: DBHeroPawn,
+  green: DBHeroPawn,
+  purple: DBHeroPawn,
+  orange: DBHeroPawn,
+}
+
 type PawnProviderProps = {children: React.ReactNode}
 
 export const pawnsInitialState: PawnState = {
-  yellow: PawnFactory("yellow", takePosition()),
-  green: PawnFactory("green", takePosition()),
-  purple: PawnFactory("purple", takePosition()),
-  orange: PawnFactory("orange", takePosition()),
+  yellow: PawnFactory("yellow").pawn,
+  green: PawnFactory("green").pawn,
+  purple: PawnFactory("purple").pawn,
+  orange: PawnFactory("orange").pawn,
+}
+
+export const pawnDBInitialState: DBPawnState = {
+  yellow: PawnFactory("yellow", takePosition()).dbPawn,
+  green: PawnFactory("green", takePosition()).dbPawn,
+  purple: PawnFactory("purple", takePosition()).dbPawn,
+  orange: PawnFactory("orange", takePosition()).dbPawn,
 }
 
 const PawnContext = createContext<{pawnState: PawnState; pawnDispatch: Dispatch} | undefined>(undefined);
@@ -110,12 +137,12 @@ const pawnReducer = (pawnState: PawnState, action: any) => {
   let newState = {...pawnState};
 
   switch (action.type) {
-    case 'playerHeld': 
-      newState[action.color as keyof PawnState].playerHeld = action.value;
-      return newState;
-    case 'movePawn': 
-      newState[action.color as keyof PawnState].position = action.value;
-      return newState;
+    // case 'playerHeld': 
+    //   newState[action.color as keyof PawnState].playerHeld = action.value;
+    //   return newState;
+    // case 'movePawn': 
+    //   newState[action.color as keyof PawnState].position = action.value;
+    //   return newState;
     case 'addBlockedPositions': 
       newState[action.color as keyof PawnState].blockedPositions = action.value;
       return newState;
