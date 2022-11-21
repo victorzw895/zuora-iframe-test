@@ -13,6 +13,10 @@
   }
 }
 
+#z_hppm_iframe {
+  height: 100%;
+}
+
 .App-header {
   background-color: #282c34;
   min-height: 100vh;
@@ -40,6 +44,7 @@
 .MMApp {
   height: 100vh;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
 }

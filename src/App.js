@@ -1,42 +1,96 @@
-import React, { useEffect, useState } from 'react';
-import Board from './Components/Board';
+import { useEffect, useState } from 'react';
 import './App.css';
-import { PawnProvider } from './Contexts/PawnContext';
-import { PlayerProvider } from './Contexts/PlayerContext';
-import { TilesProvider } from './Contexts/TilesContext';
-import { useGame } from './Contexts/GameContext';
-import Lobby from './Components/Lobby';
-import { firestore } from "./Firestore";
-import { useDocumentData } from 'react-firebase-hooks/firestore'
+import { Button } from '@mui/material';
+import { params } from './params';
+
+const zuoraPaymentHandler = (paymentGateway) => {
+  console.log('zuoraPaymentHandler method', paymentGateway);
+
+  return (paymentResponse) => {
+    console.log('callback', paymentResponse);
+  };
+};
 
 function App() {
-  const { gameState, gameDispatch } = useGame();
-  const gamesRef = firestore.collection('games')
+  const [loaded, setLoaded] = useState(false);
+  const [iframeLoaded, setIframeLoaded] = useState(false);
 
-  const [gameDoc, setGameDoc] = useState(null);
-
-  const [currentGame] = useDocumentData(gameDoc);
+  const ZUORA_LIBRARY_URL = 'https://static.zuora.com/Resources/libs/hosted/1.3.1/zuora-min.js';
 
   useEffect(() => {
-    if (gameState.roomId) {
-      setGameDoc(gamesRef.doc(gameState.roomId))
+    const script = document.createElement('script');
+    script.src = ZUORA_LIBRARY_URL;
+    script.async = true;
+    document.body.appendChild(script);
+    setLoaded(false);
+    return () => {
+      document.body.removeChild(script);
     }
-  }, [gameState.roomId])
+  }, []);
+
+  const showPage = () => {
+    const paymentGateway = "braintree-martian-stg";
+    const zuoraSettings = [
+      {...params},
+      {
+        "creditCardHolderName": "VIC ZHANG",
+        "creditCardCountry": "AUS"
+      },
+      zuoraPaymentHandler(paymentGateway),
+      (key, code, message, rawGatewayInfo) => {
+        const errorMessage = message;
+        console.log('error callback', key, code, message, rawGatewayInfo)
+
+        window.Z.sendErrorMessageToHpm(key, errorMessage);
+      }
+    ]
+
+    console.log(window.Z)
+    
+    window.Z.renderWithErrorHandler(...zuoraSettings);
+
+    setIframeLoaded(true)
+  }
+
+  const submitPage = () => {
+    window.Z.submit()
+  } 
 
   return (
     <div className="MMApp">
-      <PlayerProvider>
-        <TilesProvider>
-          <PawnProvider>
-            {
-              gameState.roomId && currentGame && currentGame.gameStarted ? 
-              <Board />
-                : 
-              <Lobby />
-            }
-          </PawnProvider>
-        </TilesProvider>
-      </PlayerProvider>
+      <div className="firstTitle">
+        <font size="5" style={{marginLeft: '90px', height: '80px'}}>Inline, Submit Button Outside Hosted Page.</font>
+      </div>
+      <div className="item">
+        {!!loaded &&
+          <Button 
+            id="showPage" 
+            onClick={showPage} 
+            style={{backgroundColor: '#d8d8d8'}}
+          >
+            Open Hosted Page
+          </Button>
+        }
+      </div>
+      <div className="item">
+        <font id="errorMessage" size="3" color="red"></font>
+      </div>
+      <div className="title">
+        <div id="zuora_payment" style={{width: '100%', height: '100%'}}></div>
+      </div>
+      <div className="item">
+        <div id="submit">
+          {!!iframeLoaded && 
+            <Button 
+              id="submitButton" 
+              onClick={submitPage} 
+              style={{backgroundColor: '#d8d8d8'}}
+            >
+              Submit
+            </Button>
+          }
+        </div>
+      </div>
     </div>
   );
 }
